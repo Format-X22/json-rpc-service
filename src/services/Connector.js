@@ -438,7 +438,7 @@ class Connector extends BasicService {
     }
 
     _resolveCustomTypesForValidation(validation, types) {
-        for (const propertyName of ['properties', 'oneOf', 'allOf', 'anyOf']) {
+        for (const propertyName of ['properties', 'items', 'oneOf', 'allOf', 'anyOf']) {
             const validationInner = validation[propertyName];
 
             if (validationInner) {
