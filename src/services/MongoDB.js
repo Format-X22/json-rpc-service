@@ -60,16 +60,6 @@ class MongoDB extends BasicService {
     }
 
     /**
-     * @deprecated
-     * Получение типов схем, необходимо для обозначения особых
-     * типов полей для моделей.
-     * @returns {Mongoose.Schema.Types} Типы схем.
-     */
-    static get type() {
-        return mongoose.Schema.Types;
-    }
-
-    /**
      * Получение типов схем, необходимо для обозначения особых
      * типов полей для моделей.
      * @returns {Mongoose.Schema.Types} Типы схем.

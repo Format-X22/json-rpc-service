@@ -53,13 +53,6 @@ class BasicMain extends Basic {
     }
 
     /**
-     * @deprecated
-     */
-    defineMeta() {
-        Logger.warn('Define meta is deprecated');
-    }
-
-    /**
      * Подключит и запустит сервис работы
      * с базой данных MongoDB до запуска метода boot.
      * @param {string/null} [forceConnectString] Строка подключения,

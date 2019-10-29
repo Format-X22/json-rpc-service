@@ -14,15 +14,6 @@ const BigNumber = require('bignumber.js');
  * но эта обертка позволяет работать с ними без потерь.
  */
 class BigNum extends BigNumber {
-    /**
-     * @deprecated
-     * Возвращает класс оригинальной библиотеки bignumber.js.
-     * @returns {{BigNumber}} Класс.
-     */
-    static OriginalBigNumber() {
-        return BigNumber;
-    }
-
     static clone(config) {
         const original = BigNum;
         const result = class BigNum extends original {};
@@ -167,14 +158,6 @@ class BigNum extends BigNumber {
 
     sqrt() {
         return new BigNum(super.sqrt());
-    }
-
-    /**
-     * @deprecated
-     * @returns {BigNumber} Оригинальный инстанс bignumber.js.
-     */
-    rawValue() {
-        return this;
     }
 
     /**
