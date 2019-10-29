@@ -1,7 +1,7 @@
 const Basic = require('./Basic');
 const MongoDB = require('../services/MongoDB');
 const Logger = require('../utils/Logger');
-const metrics = require('../utils/metrics');
+const Metrics = require('../utils/PrometheusMetrics');
 
 /**
  * Базовый класс главного класса приложения.
@@ -33,6 +33,7 @@ class BasicMain extends Basic {
         this._startMongoBeforeBoot = false;
         this._mongoDbForceConnectString = null;
         this._mongoDbOptions = {};
+        this._metrics = new Metrics();
     }
 
     async start() {
@@ -41,21 +42,14 @@ class BasicMain extends Basic {
         await this.startNested();
         this._tryIncludeMongoToNested();
 
-        metrics.inc('service_start');
+        this._metrics.inc('service_start');
     }
 
     async stop() {
         await this.stopNested();
 
-        metrics.inc('service_stop');
+        this._metrics.inc('service_stop');
         process.exit(0);
-    }
-
-    /**
-     * @deprecated
-     */
-    defineMeta() {
-        Logger.warn('Define meta is deprecated');
     }
 
     /**

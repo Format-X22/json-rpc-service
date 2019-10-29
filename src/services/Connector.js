@@ -5,7 +5,7 @@ const jayson = require('jayson');
 const env = require('../data/env');
 const Logger = require('../utils/Logger');
 const BasicService = require('./Basic');
-const metrics = require('../utils/metrics');
+const Metrics = require('../utils/PrometheusMetrics');
 
 /**
  * Сервис связи между микросервисами.
@@ -181,19 +181,26 @@ const metrics = require('../utils/metrics');
  */
 class Connector extends BasicService {
     /**
-     * @param {string} [host] Адрес подключения, иначе возьмется из GLS_CONNECTOR_HOST.
-     * @param {number} [port] Порт подключения, иначе возьмется из GLS_CONNECTOR_PORT.
+     * @param {string} [host] Адрес подключения, иначе возьмется из JRS_CONNECTOR_HOST.
+     * @param {number} [port] Порт подключения, иначе возьмется из JRS_CONNECTOR_PORT.
+     * @param {string} [socket] Сокет подключения, иначе возьмется из JRS_CONNECTOR_SOCKET.
      */
-    constructor({ host = env.GLS_CONNECTOR_HOST, port = env.GLS_CONNECTOR_PORT } = {}) {
+    constructor({
+        host = env.JRS_CONNECTOR_HOST,
+        port = env.JRS_CONNECTOR_PORT,
+        socket = env.JRS_CONNECTOR_SOCKET,
+    } = {}) {
         super();
 
         this._host = host;
         this._port = port;
+        this._socket = socket;
 
         this._server = null;
         this._clientsMap = new Map();
         this._defaultResponse = { status: 'OK' };
         this._useEmptyResponseCorrection = true;
+        this._metrics = new Metrics();
     }
 
     /**
@@ -242,7 +249,7 @@ class Connector extends BasicService {
                     resolve(response);
                 }
 
-                if (env.GLS_EXTERNAL_CALLS_METRICS) {
+                if (env.JRS_EXTERNAL_CALLS_METRICS) {
                     this._reportStats({
                         type: 'call',
                         method: `${service}.${method}`,
@@ -332,13 +339,19 @@ class Connector extends BasicService {
 
             this._server = jayson.server(routes).http();
 
-            this._server.listen(this._port, this._host, error => {
+            const handler = error => {
                 if (error) {
                     reject(error);
                 } else {
                     resolve();
                 }
-            });
+            };
+
+            if (this._socket) {
+                this._server.listen(this._socket, handler);
+            } else {
+                this._server.listen(this._port, this._host, handler);
+            }
         });
     }
 
@@ -425,7 +438,7 @@ class Connector extends BasicService {
     }
 
     _resolveCustomTypesForValidation(validation, types) {
-        for (const propertyName of ['properties', 'oneOf', 'allOf', 'anyOf']) {
+        for (const propertyName of ['properties', 'items', 'oneOf', 'allOf', 'anyOf']) {
             const validationInner = validation[propertyName];
 
             if (validationInner) {
@@ -586,8 +599,8 @@ class Connector extends BasicService {
 
         const metricNamePrefix = `${type}_api_${status}`;
 
-        metrics.inc(`${metricNamePrefix}_count`, labels);
-        metrics.recordTime(`${metricNamePrefix}_time`, time, labels);
+        this._metrics.inc(`${metricNamePrefix}_count`, labels);
+        this._metrics.recordTime(`${metricNamePrefix}_time`, time, labels);
     }
 
     _handleHandlerError(callback, error) {
