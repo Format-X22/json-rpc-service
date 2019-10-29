@@ -1,12 +1,13 @@
 require('colors');
 const moment = require('moment');
-const metrics = require('./metrics');
 
 /**
  * Логгер действий.
  * Выводит дату с секундами, PID процесса и маркер вида лога в цвете.
  */
 class Logger {
+    static metrics = null;
+
     /**
      * Залогировать обычное действие.
      */
@@ -26,7 +27,10 @@ class Logger {
      */
     static warn(...args) {
         this._log('[warn]', args, 'yellow');
-        metrics.inc('log_warnings');
+
+        this._tryInitMetrics();
+
+        this.metrics.inc('log_warnings');
     }
 
     /**
@@ -34,7 +38,10 @@ class Logger {
      */
     static error(...args) {
         this._log('[error]', args, 'red');
-        metrics.inc('log_errors');
+
+        this._tryInitMetrics();
+
+        this.metrics.inc('log_errors');
     }
 
     static _log(prefix, data, color) {
@@ -43,6 +50,14 @@ class Logger {
 
     static _now() {
         return moment().format('YYYY-MM-DD HH:mm:ss');
+    }
+
+    static _tryInitMetrics() {
+        if (!this.metrics) {
+            const Metrics = require('../utils/PrometheusMetrics');
+
+            this.metrics = new Metrics();
+        }
     }
 }
 
