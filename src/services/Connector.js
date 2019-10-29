@@ -438,7 +438,7 @@ class Connector extends BasicService {
     }
 
     _resolveCustomTypesForValidation(validation, types) {
-        for (const propertyName of ['properties', 'items', 'oneOf', 'allOf', 'anyOf']) {
+        for (const propertyName of ['properties', 'oneOf', 'allOf', 'anyOf']) {
             const validationInner = validation[propertyName];
 
             if (validationInner) {
@@ -446,6 +446,18 @@ class Connector extends BasicService {
                     this._resolveValidationType(typeConfig, types);
                     this._resolveCustomTypesForValidation(typeConfig, types);
                 }
+            }
+        }
+
+        if (validation.items) {
+            if (Array.isArray(validation.items)) {
+                for (const item of validation.items) {
+                    this._resolveValidationType(item, types);
+                    this._resolveCustomTypesForValidation(item, types);
+                }
+            } else {
+                this._resolveValidationType(validation.items, types);
+                this._resolveCustomTypesForValidation(validation.items, types);
             }
         }
     }
