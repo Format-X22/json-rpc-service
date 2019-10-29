@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const env = require('../data/env');
 const Logger = require('../utils/Logger');
 const BasicService = require('./Basic');
-const metrics = require('../utils/metrics');
+const Metrics = require('../utils/PrometheusMetrics');
 
 /**
  * Сервис взаимодействия с базой данных MongoDB.
@@ -10,6 +10,12 @@ const metrics = require('../utils/metrics');
  * а также обертку для создания моделей формата Mongoose.Schema.
  */
 class MongoDB extends BasicService {
+    constructor(...args) {
+        super(...args);
+
+        this._metrics = new Metrics();
+    }
+
     /**
      * Создание модели по объекту-конфигу.
      * Дополнительно вторым аргументом можно указать конфиг,
@@ -47,10 +53,10 @@ class MongoDB extends BasicService {
     /**
      * Получение объекта драйвера, который используется в данном классе.
      * Необходимо для выполнения операций непосредственно с голым драйвером mongoose
-     * @returns {mongoose}
+     * @returns {Mongoose}
      */
-    static get mongoose(){
-        return mongoose
+    static get mongoose() {
+        return mongoose;
     }
 
     /**
@@ -93,7 +99,7 @@ class MongoDB extends BasicService {
             const connection = mongoose.connection;
 
             connection.on('error', error => {
-                metrics.inc('mongo_error');
+                this._metrics.inc('mongo_error');
                 Logger.error('MongoDB error:', error);
                 process.exit(1);
             });

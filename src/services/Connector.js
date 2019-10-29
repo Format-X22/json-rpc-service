@@ -5,7 +5,7 @@ const jayson = require('jayson');
 const env = require('../data/env');
 const Logger = require('../utils/Logger');
 const BasicService = require('./Basic');
-const metrics = require('../utils/metrics');
+const Metrics = require('../utils/PrometheusMetrics');
 
 /**
  * Сервис связи между микросервисами.
@@ -194,6 +194,7 @@ class Connector extends BasicService {
         this._clientsMap = new Map();
         this._defaultResponse = { status: 'OK' };
         this._useEmptyResponseCorrection = true;
+        this._metrics = new Metrics();
     }
 
     /**
@@ -586,8 +587,8 @@ class Connector extends BasicService {
 
         const metricNamePrefix = `${type}_api_${status}`;
 
-        metrics.inc(`${metricNamePrefix}_count`, labels);
-        metrics.recordTime(`${metricNamePrefix}_time`, time, labels);
+        this._metrics.inc(`${metricNamePrefix}_count`, labels);
+        this._metrics.recordTime(`${metricNamePrefix}_time`, time, labels);
     }
 
     _handleHandlerError(callback, error) {
