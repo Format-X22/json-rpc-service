@@ -1,9 +1,21 @@
 const express = require('express');
 const client = require('prom-client');
 const env = require('../data/env');
+const Logger = require('../utils/Logger');
 
+let createdAlready = false;
+
+/**
+ * Класс предоставляет сервер метрик Prometheus.
+ * Класс является синглтоном и пропускает попытку
+ * создания ещё одного экземпляра, возвращая существующий.
+ */
 class PrometheusMetrics {
     constructor() {
+        if (createdAlready) {
+            return PrometheusMetrics._instance;
+        }
+
         if (env.JRS_SYSTEM_METRICS) {
             client.collectDefaultMetrics({ timeout: 5000 });
         }
@@ -27,6 +39,8 @@ class PrometheusMetrics {
         });
 
         PrometheusMetrics._instance = this;
+
+        createdAlready = true;
     }
 
     /**
