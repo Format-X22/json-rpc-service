@@ -448,6 +448,18 @@ class Connector extends BasicService {
                 }
             }
         }
+
+        if (validation.items) {
+            if (Array.isArray(validation.items)) {
+                for (const item of validation.items) {
+                    this._resolveValidationType(item, types);
+                    this._resolveCustomTypesForValidation(item, types);
+                }
+            } else {
+                this._resolveValidationType(validation.items, types);
+                this._resolveCustomTypesForValidation(validation.items, types);
+            }
+        }
     }
 
     _resolveValidationType(typeConfig, types) {
