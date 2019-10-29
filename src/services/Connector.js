@@ -181,10 +181,10 @@ const Metrics = require('../utils/PrometheusMetrics');
  */
 class Connector extends BasicService {
     /**
-     * @param {string} [host] Адрес подключения, иначе возьмется из GLS_CONNECTOR_HOST.
-     * @param {number} [port] Порт подключения, иначе возьмется из GLS_CONNECTOR_PORT.
+     * @param {string} [host] Адрес подключения, иначе возьмется из JRS_CONNECTOR_HOST.
+     * @param {number} [port] Порт подключения, иначе возьмется из JRS_CONNECTOR_PORT.
      */
-    constructor({ host = env.GLS_CONNECTOR_HOST, port = env.GLS_CONNECTOR_PORT } = {}) {
+    constructor({ host = env.JRS_CONNECTOR_HOST, port = env.JRS_CONNECTOR_PORT } = {}) {
         super();
 
         this._host = host;
@@ -243,7 +243,7 @@ class Connector extends BasicService {
                     resolve(response);
                 }
 
-                if (env.GLS_EXTERNAL_CALLS_METRICS) {
+                if (env.JRS_EXTERNAL_CALLS_METRICS) {
                     this._reportStats({
                         type: 'call',
                         method: `${service}.${method}`,

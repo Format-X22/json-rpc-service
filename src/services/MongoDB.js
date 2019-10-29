@@ -109,7 +109,7 @@ class MongoDB extends BasicService {
             });
 
             mongoose.connect(
-                forceConnectString || env.GLS_MONGO_CONNECT,
+                forceConnectString || env.JRS_MONGO_CONNECT,
                 { useNewUrlParser: true, ...options }
             );
         });

@@ -4,7 +4,7 @@ const env = require('../data/env');
 
 class PrometheusMetrics {
     constructor() {
-        if (env.GLS_SYSTEM_METRICS) {
+        if (env.JRS_SYSTEM_METRICS) {
             client.collectDefaultMetrics({ timeout: 5000 });
         }
 
@@ -19,7 +19,7 @@ class PrometheusMetrics {
             res.end(client.register.metrics());
         });
 
-        this._server.listen(env.GLS_METRICS_PORT, env.GLS_METRICS_HOST, err => {
+        this._server.listen(env.JRS_METRICS_PORT, env.JRS_METRICS_HOST, err => {
             if (err) {
                 // Ошибка при поднятии метрик не должна рушить приложение, просто логируем.
                 Logger.warn('PrometheusMetrics server start failed:', err);
