@@ -1,6 +1,6 @@
 const EventEmitter = require('events');
-const logger = require('../utils/Logger');
-const env = require('../env');
+const Logger = require('../utils/Logger');
+const env = require('../data/env');
 
 /**
  * Базовый сервис, выступающий в роле абстрактного сервиса с частью уже
@@ -43,6 +43,9 @@ const env = require('../env');
  * emit и on, для других действий с эвентами необходимо напрямую использовать
  * интсанс, получаемый по getEmitter(). Также возможно транслировать эвенты
  * из других объектов через себя.
+ *
+ * Для удобства есть возможность указывать
+ * асинхронную логику запуска в методе boot.
  */
 class Basic {
     constructor() {
@@ -68,41 +71,54 @@ class Basic {
     }
 
     /**
-     * Абстрактный метод старта сервиса.
+     * Старт сервиса.
+     * @param {...*} [args] Аргументы.
      * @returns {Promise<void>} Промис без экстра данных.
      */
-    async start() {
-        throw 'No service start logic';
+    async start(...args) {
+        await this.startNested();
     }
 
     /**
-     * Абстрактный метод остановки сервиса, не требудет необходимости
-     * в имплементации.
+     * Остановка сервиса.
+     * @param {...*} [args] Аргументы.
      * @returns {Promise<void>} Промис без экстра данных.
      */
-    async stop() {
-        logger.log(`No extra stop logic for service ${this.constructor.name}`);
+    async stop(...args) {
+        await this.stopNested();
     }
 
     /**
      * Абстрактный метод восстановления сервиса, не требует необходимости
      * в имплементации.
+     * @param {...*} [args] Аргументы.
      * @returns {Promise<void>} Промис без экстра данных.
      */
-    async restore() {
-        logger.log(`No restore logic for service ${this.constructor.name}`);
+    async restore(...args) {
+        // Do nothing
     }
 
     /**
      * Абстракнтный метод повторной попытки совершения действия.
+     * @param {...*} [args] Аргументы.
      * @returns {Promise<void>} Промис без экстра данных.
      */
-    async retry() {
-        throw 'No retry logic';
+    async retry(...args) {
+        // Do nothing
     }
 
     /**
-     * Добавляет 1 или более сервисов в зависимость к этому сервису.
+     * Абстрактный асинхронный метод, который предполагается запускать
+     * при старте сервиса для выполнения какой-либо асинхронной логики,
+     * которую нельзя поместить в конструктор.
+     * @returns {Promise<void>} Промис без экстра данных.
+     */
+    async boot() {
+        // abstract
+    }
+
+    /**
+     * Добавляет сервисы в зависимость к этому сервису.
      * @param {Basic} services Сервисы.
      */
     addNested(...services) {
@@ -114,15 +130,15 @@ class Basic {
      * @returns {Promise<void>} Промис без экстра данных.
      */
     async startNested() {
-        logger.info('Start services...');
+        Logger.info('Start services...');
 
         for (let service of this._nestedServices) {
-            logger.info(`Start ${service.constructor.name}...`);
+            Logger.info(`Start ${service.constructor.name}...`);
             await service.start();
-            logger.info(`The ${service.constructor.name} done!`);
+            Logger.info(`The ${service.constructor.name} done!`);
         }
 
-        logger.info('Start services done!');
+        Logger.info('Start services done!');
     }
 
     /**
@@ -130,19 +146,19 @@ class Basic {
      * @returns {Promise<void>} Промис без экстра данных.
      */
     async stopNested() {
-        logger.info('Cleanup...');
+        Logger.info('Cleanup...');
 
         for (let service of this._nestedServices.reverse()) {
-            logger.info(`Stop ${service.constructor.name}...`);
+            Logger.info(`Stop ${service.constructor.name}...`);
 
             if (!service.isDone()) {
                 await service.stop();
             }
 
-            logger.info(`The ${service.constructor.name} done!`);
+            Logger.info(`The ${service.constructor.name} done!`);
         }
 
-        logger.info('Cleanup done!');
+        Logger.info('Cleanup done!');
     }
 
     /**
@@ -154,10 +170,22 @@ class Basic {
     }
 
     /**
+     * Завершает процесс с ошибкой в случае обнаружения необработанного
+     * реджекта/ошибки промиса.
+     */
+    throwOnUnhandledPromiseRejection() {
+        process.on('unhandledRejection', error => {
+            Logger.error('Unhandled promise rejection:', error);
+            process.exit(1);
+        });
+    }
+
+    /**
      * Итерация сервиса в случае если сервис является циклическим.
+     * @param {...*} [args] Аргументы.
      * @returns {Promise<void>} Промис без экстра данных.
      */
-    async iteration() {
+    async iteration(...args) {
         throw 'Empty iteration body';
     }
 
@@ -190,23 +218,23 @@ class Basic {
      * @param {Object} [serviceEnv] Модуль конфигурации уровня микросервиса.
      */
     printEnvBasedConfig(serviceEnv = {}) {
-        logger.info('ENV-based config:');
-        logger.info('Core config params:');
-        logger.info('---');
+        Logger.info('ENV-based config:');
+        Logger.info('Core config params:');
+        Logger.info('---');
 
         for (let key of Object.keys(env)) {
-            logger.info(`${key} = ${env[key]}`);
+            Logger.info(`${key} = ${env[key]}`);
         }
 
-        logger.info('---');
-        logger.info('Service config params:');
-        logger.info('---');
+        Logger.info('---');
+        Logger.info('Service config params:');
+        Logger.info('---');
 
         for (let key of Object.keys(serviceEnv)) {
-            logger.info(`${key} = ${serviceEnv[key]}`);
+            Logger.info(`${key} = ${serviceEnv[key]}`);
         }
 
-        logger.info('---');
+        Logger.info('---');
     }
 
     /**
@@ -225,7 +253,7 @@ class Basic {
      * Данные, при необходимости, можно передать аргментами
      * через запятую.
      * @param {string/Symbol} name Имя события.
-     * @param {...any} [data] Данные.
+     * @param {...*} [data] Данные.
      */
     emit(name, ...data) {
         this._emitter.emit(name, ...data);
@@ -233,12 +261,22 @@ class Basic {
 
     /**
      * Трансляция эвентов целевого объекта через себя.
-     * @param {any} from Эмиттер, эвенты которого необходимо транслировать.
-     * @param {...string/...Symbol} events Список эвентов.
+     * @param {Object/Object[]} from Эмиттер, эвенты которого необходимо транслировать.
+     * @param {...string/string/string[]} events Список эвентов.
      */
     translateEmit(from, ...events) {
-        for (let event of events) {
-            from.on(event, (...args) => this.emit(event, ...args));
+        if (!Array.isArray(from)) {
+            from = [from];
+        }
+
+        if (Array.isArray(events[0])) {
+            events = events[0];
+        }
+
+        for (let target of from) {
+            for (let event of events) {
+                target.on(event, (...args) => this.emit(event, ...args));
+            }
         }
     }
 
@@ -249,6 +287,16 @@ class Basic {
      */
     on(name, callback) {
         this._emitter.on(name, callback);
+    }
+
+    /**
+     * Подписка на эвент с указанным именем.
+     * Исполняется один раз.
+     * @param {string/Symbol} name Имя эвента.
+     * @param {Function} callback Колбек.
+     */
+    once(name, callback) {
+        this._emitter.once(name, callback);
     }
 }
 

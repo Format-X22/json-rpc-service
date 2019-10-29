@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
-const env = require('../env');
-const logger = require('../utils/Logger');
+const env = require('../data/env');
+const Logger = require('../utils/Logger');
 const BasicService = require('./Basic');
-const stats = require('../Stats').client;
+const metrics = require('../utils/metrics');
 
 /**
  * Сервис взаимодействия с базой данных MongoDB.
@@ -25,10 +25,15 @@ class MongoDB extends BasicService {
      * Например {fields: {user: 1, data: 1}, options: {sparse: true}}
      * опишет составной индекс с указанием пропуска значений с null.
      * О схемах детальнее описано в документации Mongoose.
+     * @param {Object} optionsConfig.schema Дополнительные общие настройки
+     * для Mongoose схемы.
      * @returns {Model} Модель.
      */
     static makeModel(name, schemaConfig, optionsConfig = {}) {
-        const schema = new mongoose.Schema(schemaConfig, { timestamps: true });
+        const schema = new mongoose.Schema(
+            schemaConfig,
+            Object.assign({ timestamps: true }, optionsConfig.schema)
+        );
 
         if (optionsConfig.index) {
             for (let indexConfig of optionsConfig.index) {
@@ -40,6 +45,16 @@ class MongoDB extends BasicService {
     }
 
     /**
+     * Получение объекта драйвера, который используется в данном классе.
+     * Необходимо для выполнения операций непосредственно с голым драйвером mongoose
+     * @returns {mongoose}
+     */
+    static get mongoose(){
+        return mongoose
+    }
+
+    /**
+     * @deprecated
      * Получение типов схем, необходимо для обозначения особых
      * типов полей для моделей.
      * @returns {Mongoose.Schema.Types} Типы схем.
@@ -49,28 +64,48 @@ class MongoDB extends BasicService {
     }
 
     /**
+     * Получение типов схем, необходимо для обозначения особых
+     * типов полей для моделей.
+     * @returns {Mongoose.Schema.Types} Типы схем.
+     */
+    static get schemaTypes() {
+        return mongoose.Schema.Types;
+    }
+
+    /**
+     * Получение коллекции конструкторов типов данных MongoDB.
+     * @returns {Mongoose.Types} Типы схем.
+     */
+    static get mongoTypes() {
+        return mongoose.Types;
+    }
+
+    /**
      * Запуск, подключение к базе даннх на основе переменных
      * окружения, либо по явно указанной строке подключеня.
      * @param {string/null} [forceConnectString] Строка подключения,
      * не обязательна.
-     * @returns {Promise<any>} Промис без экстра данных.
+     * @param {Object} [options] Настройки подключения к базе.
+     * @returns {Promise<*>} Промис без экстра данных.
      */
-    async start(forceConnectString = null) {
+    async start(forceConnectString = null, options = {}) {
         return new Promise(resolve => {
             const connection = mongoose.connection;
 
             connection.on('error', error => {
-                stats.increment('mongo_error');
-                logger.error(`MongoDB - ${error}`);
+                metrics.inc('mongo_error');
+                Logger.error('MongoDB error:', error);
                 process.exit(1);
             });
             connection.once('open', () => {
-                stats.increment('mongo_connected');
-                logger.info('MongoDB connection established.');
+                Logger.info('MongoDB connection established.');
                 resolve();
             });
 
-            mongoose.connect(forceConnectString || env.GLS_MONGO_CONNECT);
+            mongoose.connect(
+                forceConnectString || env.GLS_MONGO_CONNECT,
+                { useNewUrlParser: true, ...options }
+            );
         });
     }
 
@@ -80,7 +115,7 @@ class MongoDB extends BasicService {
      */
     async stop() {
         await mongoose.disconnect();
-        logger.info('MongoDB disconnected.');
+        Logger.info('MongoDB disconnected.');
     }
 }
 

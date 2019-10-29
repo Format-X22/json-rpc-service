@@ -1,31 +1,57 @@
 {
-    "name": "gls-core-service",
-    "version": "1.6.0",
-    "description": "",
-    "main": "index.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "prettier": {
-        "singleQuote": true,
-        "tabWidth": 4,
-        "semi": true,
-        "trailingComma": "es5",
-        "printWidth": 100
-    },
-    "author": "golos.io",
-    "license": "GPL-3.0",
-    "devDependencies": {
-        "prettier": "^1.14.3"
-    },
-    "dependencies": {
-        "colors": "^1.3.2",
-        "golos-js": "^0.7.3",
-        "jayson": "^2.0.6",
-        "lodash.template": "^4.4.0",
-        "moment": "^2.22.2",
-        "mongoose": "^5.2.16",
-        "node-statsd": "^0.1.1",
-        "ws": "^5.2.2"
-    }
+  "name": "gls-core-service",
+  "version": "3.52.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "golos.io",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GolosChain/core-service.git"
+  },
+  "dependencies": {
+    "ajv": "^6.10.2",
+    "bignumber.js": "^7.2.1",
+    "colors": "^1.3.3",
+    "cyberwayjs": "^20.0.0-beta7",
+    "deepmerge": "^3.3.0",
+    "eosjs-ecc": "^4.0.4",
+    "express": "^4.17.1",
+    "jayson": "^2.1.2",
+    "lodash.template": "^4.5.0",
+    "moment": "^2.24.0",
+    "mongoose": "^5.6.6",
+    "node-fetch": "^2.6.0",
+    "node-nats-streaming": "^0.2.6",
+    "prom-client": "^11.5.3",
+    "random": "^2.1.1",
+    "sanitize-html": "^1.20.1",
+    "text-encoding": "^0.7.0",
+    "then-sleep": "^1.0.1",
+    "ws": "^5.2.2"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "tabWidth": 4,
+    "semi": true,
+    "trailingComma": "es5",
+    "printWidth": 100,
+    "overrides": [
+      {
+        "files": [
+          "*.json",
+          "*.yml"
+        ],
+        "options": {
+          "tabWidth": 2
+        }
+      }
+    ]
+  },
+  "devDependencies": {
+    "prettier": "^1.18.2"
+  }
 }
