@@ -183,12 +183,18 @@ class Connector extends BasicService {
     /**
      * @param {string} [host] Адрес подключения, иначе возьмется из JRS_CONNECTOR_HOST.
      * @param {number} [port] Порт подключения, иначе возьмется из JRS_CONNECTOR_PORT.
+     * @param {string} [socket] Сокет подключения, иначе возьмется из JRS_CONNECTOR_SOCKET.
      */
-    constructor({ host = env.JRS_CONNECTOR_HOST, port = env.JRS_CONNECTOR_PORT } = {}) {
+    constructor({
+        host = env.JRS_CONNECTOR_HOST,
+        port = env.JRS_CONNECTOR_PORT,
+        socket = env.JRS_CONNECTOR_SOCKET,
+    } = {}) {
         super();
 
         this._host = host;
         this._port = port;
+        this._socket = socket;
 
         this._server = null;
         this._clientsMap = new Map();
@@ -333,13 +339,19 @@ class Connector extends BasicService {
 
             this._server = jayson.server(routes).http();
 
-            this._server.listen(this._port, this._host, error => {
+            const handler = error => {
                 if (error) {
                     reject(error);
                 } else {
                     resolve();
                 }
-            });
+            };
+
+            if (this._socket) {
+                this._server.listen(this._socket, handler);
+            } else {
+                this._server.listen(this._port, this._host, handler);
+            }
         });
     }
 
