@@ -54,6 +54,12 @@ class Basic {
      */
     allowParallelIterations = true;
 
+    /**
+     * Прокидывать ли ошибку в итерации дальше.
+     * @type {boolean} Разрешение.
+     */
+    throwOnIterationError = true;
+
     #exclusiveIterationInProcess = false;
 
     constructor() {
@@ -312,7 +318,7 @@ class Basic {
 
     async _runIteration() {
         if (this.allowParallelIterations) {
-            await this.iteration();
+            await this._handleIteration();
             return;
         }
 
@@ -323,9 +329,22 @@ class Basic {
         this.#exclusiveIterationInProcess = true;
 
         try {
-            await this.iteration();
+            await this._handleIteration();
         } finally {
             this.#exclusiveIterationInProcess = false;
+        }
+    }
+
+    async _handleIteration() {
+        if (this.throwOnIterationError) {
+            await this.iteration();
+            return;
+        }
+
+        try {
+            await this.iteration();
+        } catch (error) {
+            Logger.error('Iteration fail - ', error);
         }
     }
 }
