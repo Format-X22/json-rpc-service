@@ -48,6 +48,14 @@ const env = require('../data/env');
  * асинхронную логику запуска в методе boot.
  */
 class Basic {
+    /**
+     * Разрешить параллельный запуск интераций.
+     * @type {boolean} Разрешение.
+     */
+    allowParallelIterations = true;
+
+    #exclusiveIterationInProcess = false;
+
     constructor() {
         this._nestedServices = [];
         this._done = false;
@@ -196,8 +204,11 @@ class Basic {
      */
     startLoop(firstIterationTimeout = 0, interval = Infinity) {
         setTimeout(async () => {
-            await this.iteration();
-            this._loopId = setInterval(this.iteration.bind(this), interval);
+            await this._runIteration();
+
+            this._loopId = setInterval(async () => {
+                await this._runIteration();
+            }, interval);
         }, firstIterationTimeout);
     }
 
@@ -297,6 +308,25 @@ class Basic {
      */
     once(name, callback) {
         this._emitter.once(name, callback);
+    }
+
+    async _runIteration() {
+        if (this.allowParallelIterations) {
+            await this.iteration();
+            return;
+        }
+
+        if (this.#exclusiveIterationInProcess) {
+            return;
+        }
+
+        this.#exclusiveIterationInProcess = true;
+
+        try {
+            await this.iteration();
+        } finally {
+            this.#exclusiveIterationInProcess = false;
+        }
     }
 }
 
