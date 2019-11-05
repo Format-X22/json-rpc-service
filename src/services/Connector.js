@@ -14,6 +14,11 @@ const Metrics = require('../utils/PrometheusMetrics');
  * Работает посредством JSON-RPC.
  * Сервер связи конфигурируется объектом роутинга в двух вариациях.
  *
+ * Может работать в режиме middleware.
+ * При вместо создания сервера будет доступен метод getMiddleware,
+ * возвращающий middleware, совместимый с классом WebServer
+ * и библиотекой ExpressJS.
+ *
  * Лаконичная:
  *
  * ```
@@ -181,6 +186,14 @@ const Metrics = require('../utils/PrometheusMetrics');
  */
 class Connector extends BasicService {
     /**
+     * Переключить в режим middleware.
+     * Вместо создания сервера будет доступен метод getMiddleware,
+     * возвращающий middleware, совместимый с классом Server (ExpressJS).
+     * @type {boolean} Включение.
+     */
+    middlewareMode = false;
+
+    /**
      * @param {string} [host] Адрес подключения, иначе возьмется из JRS_CONNECTOR_HOST.
      * @param {number} [port] Порт подключения, иначе возьмется из JRS_CONNECTOR_PORT.
      * @param {string} [socket] Сокет подключения, иначе возьмется из JRS_CONNECTOR_SOCKET.
@@ -333,24 +346,37 @@ class Connector extends BasicService {
         this._useEmptyResponseCorrection = false;
     }
 
+    /**
+     * Получить middleware в случае если коннектор запущен
+     * в соответствующем режиме.
+     * @return {Function} middleware.
+     */
+    getMiddleware() {
+        return this._middleware;
+    }
+
     _startServer(rawRoutes, serverDefaults) {
         return new Promise((resolve, reject) => {
             const routes = this._normalizeRoutes(rawRoutes, serverDefaults);
 
-            this._server = jayson.server(routes).http();
-
-            const handler = error => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve();
-                }
-            };
-
-            if (this._socket) {
-                this._server.listen(this._socket, handler);
+            if (this.middlewareMode) {
+                this._middleware = jayson.server(routes).middleware();
             } else {
-                this._server.listen(this._port, this._host, handler);
+                this._server = jayson.server(routes).http();
+
+                const handler = error => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                };
+
+                if (this._socket) {
+                    this._server.listen(this._socket, handler);
+                } else {
+                    this._server.listen(this._port, this._host, handler);
+                }
             }
         });
     }
