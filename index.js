@@ -8,6 +8,7 @@ module.exports = {
         BasicMain: require('./src/services/BasicMain'),
         MongoDB: require('./src/services/MongoDB'),
         Connector: require('./src/services/Connector'),
+        WebServer: require('./src/services/WebServer'),
     },
     utils: {
         Logger: require('./src/utils/Logger'),

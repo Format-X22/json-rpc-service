@@ -47,6 +47,14 @@ class WebServer extends BasicService {
         }
     }
 
+    /**
+     * Express app.
+     * @return {app} Инстанс app.
+     */
+    app() {
+        return this._app;
+    }
+
     async start() {
         if (this._socket) {
             await this._app.listen(() => {
