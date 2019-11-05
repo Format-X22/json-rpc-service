@@ -361,6 +361,7 @@ class Connector extends BasicService {
 
             if (this.middlewareMode) {
                 this._middleware = jayson.server(routes).middleware();
+                resolve();
             } else {
                 this._server = jayson.server(routes).http();
 
