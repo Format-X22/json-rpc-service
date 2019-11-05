@@ -51,7 +51,7 @@ class WebServer extends BasicService {
      * Express app.
      * @return {app} Инстанс app.
      */
-    app() {
+    get app() {
         return this._app;
     }
 
