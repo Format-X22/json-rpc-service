@@ -32,6 +32,8 @@ class WebServer extends BasicService {
         this._host = host;
         this._port = port;
         this._socket = socket;
+        this._connector = connector;
+        this._connectorPath = connectorPath;
 
         this._app = express();
 
@@ -41,10 +43,6 @@ class WebServer extends BasicService {
 
         this._app.use(bodyParser.urlencoded({ extended: false }));
         this._app.use(bodyParser.json());
-
-        if (connector) {
-            this._app.post(connectorPath, connector.getMiddleware());
-        }
     }
 
     /**
@@ -56,6 +54,10 @@ class WebServer extends BasicService {
     }
 
     async start() {
+        if (this._connector) {
+            this._app.post(this._connectorPath, this._connector.getMiddleware());
+        }
+
         if (this._socket) {
             await this._app.listen(() => {
                 Logger.info(`Web server listen socket - ${this._socket}`);
