@@ -59,7 +59,7 @@ class WebServer extends BasicService {
         }
 
         if (this._socket) {
-            await this._app.listen(() => {
+            await this._app.listen(this._socket, () => {
                 Logger.info(`Web server listen socket - ${this._socket}`);
             });
         } else {
