@@ -1,6 +1,6 @@
 {
   "name": "json-rpc-service",
-  "version": "4.3.5",
+  "version": "4.4.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "jayson": "^2.1.2",
     "lodash.template": "^4.5.0",
     "moment": "^2.24.0",
-    "mongoose": "^5.7.7",
+    "mongoose": "^5.7.12",
     "prom-client": "^11.5.3"
   },
   "prettier": {
@@ -44,6 +44,6 @@
     ]
   },
   "devDependencies": {
-    "prettier": "^1.18.2"
+    "prettier": "^1.19.1"
   }
 }

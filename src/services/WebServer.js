@@ -18,6 +18,7 @@ class WebServer extends BasicService {
      * @param [host] Хост.
      * @param [port] Порт.
      * @param [socket] Unix-socket вместо host/port.
+     * @param [bodySizeLimit] Максимальный размер тела запроса.
      */
     constructor({
         staticDir = env.JRS_SERVER_STATIC_DIR,
@@ -26,6 +27,7 @@ class WebServer extends BasicService {
         host = env.JRS_CONNECTOR_HOST,
         port = env.JRS_CONNECTOR_PORT,
         socket = env.JRS_CONNECTOR_SOCKET,
+        bodySizeLimit = env.JRS_SERVER_BODY_SIZE_LIMIT,
     }) {
         super();
 
@@ -41,8 +43,8 @@ class WebServer extends BasicService {
             this._app.use(express.static(staticDir));
         }
 
-        this._app.use(bodyParser.urlencoded({ extended: false }));
-        this._app.use(bodyParser.json());
+        this._app.use(bodyParser.urlencoded({ extended: false, limit: bodySizeLimit }));
+        this._app.use(bodyParser.json({ limit: bodySizeLimit }));
     }
 
     /**
