@@ -55,6 +55,7 @@ class BasicMain extends Basic {
     /**
      * Подключит и запустит сервис работы
      * с базой данных MongoDB до запуска метода boot.
+     * Сразу сохраняет инстанс сервиса MongoDB внутри класса.
      * @param {string/null} [forceConnectString] Строка подключения,
      * не обязательна.
      * @param {Object} [options] Настройки подключения.
@@ -64,6 +65,15 @@ class BasicMain extends Basic {
         this._startMongoBeforeBoot = true;
         this._mongoDbForceConnectString = forceConnectString;
         this._mongoDbOptions = options;
+    }
+
+    /**
+     * Получить инстанс сервиса MongoDB, если он есть.
+     * Инстанс будет не запущенным до старта этого сервиса.
+     * @return {MongoDB/null} Инстанс.
+     */
+    getMongoDbInstance() {
+        return this._mongoDb || null;
     }
 
     async _tryStartMongoBeforeBoot() {
