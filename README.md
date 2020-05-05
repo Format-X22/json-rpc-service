@@ -8,6 +8,7 @@
 -   Golos http://golos.io
 -   CyberWay http://cyberway.io
 -   BankEx http://bankex.com
+-   TNC Group https://tncitgroup.com
 
 ---
 

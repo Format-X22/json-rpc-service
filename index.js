@@ -17,6 +17,7 @@ module.exports = {
         Parallel: require('./src/utils/Parallel'),
         ParallelPool: require('./src/utils/ParallelPool'),
         defaultStarter: require('./src/utils/defaultStarter'),
+        Content: require('./src/utils/Content'),
     },
     types: {
         BigNum: require('./src/types/BigNum'),
