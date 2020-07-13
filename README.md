@@ -10,6 +10,10 @@
 -   BankEx http://bankex.com
 -   TNC Group https://tncitgroup.com
 
+И не в блокчейн проектах:
+
+-   TROOVE http://troove.ru
+
 ---
 
 **Основные возможности:**
