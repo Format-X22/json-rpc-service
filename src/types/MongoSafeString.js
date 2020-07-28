@@ -11,6 +11,6 @@ class MongoSafeString extends mongoose.SchemaType {
     }
 }
 
-mongoose.Schema.Types.MongoBigNum = MongoSafeString;
+mongoose.Schema.Types.MongoSafeString = MongoSafeString;
 
 module.exports = mongoose.Schema.Types.MongoSafeString;
