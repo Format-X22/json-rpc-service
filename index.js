@@ -18,6 +18,7 @@ module.exports = {
         ParallelPool: require('./src/utils/ParallelPool'),
         defaultStarter: require('./src/utils/defaultStarter'),
         Content: require('./src/utils/Content'),
+        RpcApiHelper: require('./src/tests/RpcApiHelper'),
     },
     types: {
         BigNum: require('./src/types/BigNum'),
