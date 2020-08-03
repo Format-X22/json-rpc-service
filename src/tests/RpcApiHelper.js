@@ -1,6 +1,5 @@
-const fs = require('fs');
-const path = require('path');
 const jayson = require('jayson');
+const Env = require('../utils/Env');
 
 /**
  * Класс-помощник, удобный для использования в тестах типовых микросервисов.
@@ -12,15 +11,9 @@ class RpcApiHelper {
      * @param [extractApiFromEnv] Автоматически подтянуть точку монтирования и порт из .env файла
      * @param [envPath] Указать не стандартный путь до .env файла
      */
-    constructor({
-        apiMountPath = '/',
-        apiPort = 3000,
-        extractApiFromEnv = false,
-        envPath = path.resolve(process.cwd(), '.env'),
-    }) {
+    constructor({ apiMountPath = '/', apiPort = 3000, extractApiFromEnv = false, envPath = null }) {
         if (extractApiFromEnv) {
-            const rawEnvs = fs.readFileSync(envPath, { encoding: 'utf-8' });
-            const envMap = new Map(rawEnvs.split('\n').map(i => i.split('=')));
+            const envMap = Env.extractFromFile(envPath);
             const apiMountPathFromEnv = envMap.get('JRS_SERVER_CONNECTOR_PATH');
             const apiPortFromEnv = envMap.get('JRS_CONNECTOR_PORT');
 

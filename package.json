@@ -1,6 +1,6 @@
 {
   "name": "json-rpc-service",
-  "version": "4.10.2",
+  "version": "4.11.0",
   "description": "",
   "main": "index.js",
   "scripts": {
