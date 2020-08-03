@@ -16,7 +16,7 @@ class RpcApiHelper {
         apiMountPath = '/',
         apiPort = 3000,
         extractApiFromEnv = false,
-        envPath = path.resolve(__dirname, '..', '.env'),
+        envPath = path.resolve(process.cwd(), '.env'),
     }) {
         if (extractApiFromEnv) {
             const rawEnvs = fs.readFileSync(envPath, { encoding: 'utf-8' });
