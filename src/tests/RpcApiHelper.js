@@ -29,7 +29,7 @@ class RpcApiHelper {
             }
 
             if (apiPortFromEnv) {
-                apiPort = apiPortFromEnv;
+                apiPort = parseInt(apiPortFromEnv);
             }
         }
 
