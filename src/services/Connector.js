@@ -282,13 +282,46 @@ class Connector extends BasicService {
      * @returns {Promise<*>} Ответ.
      */
     async callService(service, method, params) {
+        const loggerTemplate = this._makeCallServiceErrorLogger(service, method, params);
+
+        if (typeof params !== 'object') {
+            loggerTemplate(null)(
+                'Invalid remote call signature - params must be an object, ' +
+                    'call stopped and rejected'
+            );
+
+            throw { code: 500, message: 'Critical internal error' };
+        }
+
         const response = await this.sendTo(service, method, params);
 
-        if (response.error) {
+        if (!response.error) {
+            return response.result;
+        }
+
+        const logger = loggerTemplate(response.error);
+
+        if (typeof response.error !== 'object') {
+            logger('Non-standard plain error on remote service call');
+
             throw response.error;
         }
 
-        return response.result;
+        if (!Number.isFinite(response.error.code)) {
+            logger('Non-standard hinted error on remote service call');
+
+            throw response.error;
+        }
+
+        if (response.error.code < 0) {
+            logger('Remote service call RPC-error');
+
+            throw response.error;
+        }
+
+        logger('Remote service call safe provided error');
+
+        throw response.error;
     }
 
     /**
@@ -668,6 +701,34 @@ class Connector extends BasicService {
 
         Logger.error(error);
         callback({}, null);
+    }
+
+    _makeCallServiceErrorLogger(service, method, params) {
+        if (typeof params === 'object') {
+            params = JSON.stringify(params);
+        }
+
+        return error => {
+            return description => {
+                const tokens = [
+                    description,
+                    `service alias = "${service}"`,
+                    `method = "${method}"`,
+                    `params = "${params}"`,
+                ];
+
+                // Yes, classic old school legacy JS bug with null as object
+                if (typeof error === 'object' && error !== null) {
+                    error = JSON.stringify(error);
+                }
+
+                if (error) {
+                    tokens.push(`error = "${error}"`);
+                }
+
+                Logger.error(tokens.join(', '));
+            };
+        };
     }
 }
 
