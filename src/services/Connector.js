@@ -392,6 +392,8 @@ class Connector extends BasicService {
         return new Promise((resolve, reject) => {
             const routes = this._normalizeRoutes(rawRoutes, serverDefaults);
 
+            this._injectPingRoute(routes);
+
             if (this.middlewareMode) {
                 this._middleware = jayson.server(routes).middleware();
                 resolve();
@@ -728,6 +730,15 @@ class Connector extends BasicService {
 
                 Logger.error(tokens.join(', '));
             };
+        };
+    }
+
+    _injectPingRoute(routes) {
+        routes._ping = (params, callback) => {
+            callback(null, {
+                status: 'OK',
+                alias: env.JRS_CONNECTOR_ALIAS_NAME,
+            });
         };
     }
 }
