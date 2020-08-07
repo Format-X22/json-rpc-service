@@ -183,6 +183,20 @@ const Metrics = require('../utils/PrometheusMetrics');
  *  ```
  *
  * Либо можно добавлять их динамически через метод `addService`.
+ *
+ * Дополнительно можно указать строгий режим для алиасов - при запуске микросервис
+ * сделает ping-запросы на все необходимые микросервисы и проверит соответствие
+ * алиасов в ответах сервисов с указанными алиасами:
+ *
+ * ```
+ *  requiredClients: {
+ *      alias1: {
+ *          originRemoteAlias: 'alias1',
+ *          connect: 'http://connect.string1'
+ *      },
+ *  }
+ *  ...
+ *  ```
  */
 class Connector extends BasicService {
     /**
@@ -230,7 +244,7 @@ class Connector extends BasicService {
         }
 
         if (requiredClients) {
-            this._makeClients(requiredClients);
+            await this._makeClients(requiredClients);
         }
     }
 
@@ -326,13 +340,39 @@ class Connector extends BasicService {
 
     /**
      * Динамически добавляет сервис к списку известных сервисов.
-     * @param {string} service Имя-алиас микросервиса.
-     * @param {string} connectString Строка подключения.
+     * @param {string} service Имя-алиас микросервиса для использования в коде при вызове.
+     * @param {string/Object} connectConfig Строка или конфиг подключения.
+     * @param {string} connectConfig.connect Строка подключения.
+     * @param {string/null} connectConfig.originRemoteAlias Реальное имя-алиас удаленного микросервиса.
      */
-    addService(service, connectString) {
-        const client = new jayson.client.http(connectString);
+    async addService(service, connectConfig) {
+        if (typeof connectConfig === 'string') {
+            connectConfig = { connect: connectConfig, originRemoteAlias: null };
+        }
+
+        const client = new jayson.client.http(connectConfig.connect);
 
         this._clientsMap.set(service, client);
+
+        if (connectConfig.originRemoteAlias) {
+            try {
+                const { alias } = await this.callService(service, '_ping', {});
+
+                if (alias !== connectConfig.originRemoteAlias) {
+                    Logger.error(
+                        `Try connect to "${connectConfig.originRemoteAlias}", ` +
+                            `but gain response from "${alias}" service, check connection config`
+                    );
+                    process.exit(1);
+                }
+            } catch (error) {
+                Logger.error(
+                    `Cant establish connection with "${service}" service use "${connectConfig.connect}"`
+                );
+                Logger.error('Explain:', error);
+                process.exit(1);
+            }
+        }
     }
 
     /**
@@ -417,9 +457,9 @@ class Connector extends BasicService {
         });
     }
 
-    _makeClients(requiredClients) {
+    async _makeClients(requiredClients) {
         for (let alias of Object.keys(requiredClients)) {
-            this.addService(alias, requiredClients[alias]);
+            await this.addService(alias, requiredClients[alias]);
         }
     }
 
