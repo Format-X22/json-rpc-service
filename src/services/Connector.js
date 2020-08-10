@@ -211,17 +211,20 @@ class Connector extends BasicService {
      * @param {string} [host] Адрес подключения, иначе возьмется из JRS_CONNECTOR_HOST.
      * @param {number} [port] Порт подключения, иначе возьмется из JRS_CONNECTOR_PORT.
      * @param {string} [socket] Сокет подключения, иначе возьмется из JRS_CONNECTOR_SOCKET.
+     * @param {string} [alias] Алиас коннектора в сети, иначе возьмется из JRS_CONNECTOR_ALIAS_NAME.
      */
     constructor({
         host = env.JRS_CONNECTOR_HOST,
         port = env.JRS_CONNECTOR_PORT,
         socket = env.JRS_CONNECTOR_SOCKET,
+        alias = env.JRS_CONNECTOR_ALIAS_NAME,
     } = {}) {
         super();
 
         this._host = host;
         this._port = port;
         this._socket = socket;
+        this._alias = alias;
 
         this._server = null;
         this._clientsMap = new Map();
@@ -366,23 +369,7 @@ class Connector extends BasicService {
         this._clientsMap.set(service, client);
 
         if (connectConfig.originRemoteAlias) {
-            try {
-                const { alias } = await this.callService(service, '_ping', {});
-
-                if (alias !== connectConfig.originRemoteAlias) {
-                    Logger.error(
-                        `Try connect to "${connectConfig.originRemoteAlias}", ` +
-                            `but gain response from "${alias}" service, check connection config`
-                    );
-                    process.exit(1);
-                }
-            } catch (error) {
-                Logger.error(
-                    `Cant establish connection with "${service}" service use "${connectConfig.connect}"`
-                );
-                Logger.error('Explain:', error);
-                process.exit(1);
-            }
+            await this._checkOriginRequiredClient(service, connectConfig);
         }
     }
 
@@ -788,9 +775,44 @@ class Connector extends BasicService {
         routes._ping = (params, callback) => {
             callback(null, {
                 status: 'OK',
-                alias: env.JRS_CONNECTOR_ALIAS_NAME,
+                alias: this._alias,
             });
         };
+    }
+
+    async _checkOriginRequiredClient(service, { originRemoteAlias, connect }) {
+        const time = Date.now();
+        const self = this;
+
+        async function check() {
+            try {
+                const { alias } = await self.callService(service, '_ping', {});
+
+                if (alias !== originRemoteAlias) {
+                    Logger.error(
+                        `Try connect to "${originRemoteAlias}", ` +
+                            `but gain response from "${alias}" service, check connection config`
+                    );
+                    process.exit(1);
+                }
+            } catch (error) {
+                if (time + 30_000 < Date.now()) {
+                    Logger.error(
+                        `Cant establish connection with "${service}" service use "${connect}"`
+                    );
+                    Logger.error('Explain:', error);
+                    process.exit(1);
+                }
+
+                await new Promise(resolve => {
+                    setTimeout(resolve, 100);
+                });
+
+                await check();
+            }
+        }
+
+        await check();
     }
 }
 
