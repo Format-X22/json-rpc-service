@@ -268,8 +268,19 @@ class Connector extends BasicService {
     sendTo(service, method, data) {
         return new Promise((resolve, reject) => {
             const startTs = Date.now();
+            const client = this._clientsMap.get(service);
 
-            this._clientsMap.get(service).request(method, data, (error, response) => {
+            if (!client) {
+                const error = new Error(
+                    `Fatal error - unknown service "${service}", check clients config or call point.`
+                );
+
+                Logger.error(error);
+
+                process.exit(1);
+            }
+
+            client.request(method, data, (error, response) => {
                 if (error) {
                     reject(error);
                 } else {
