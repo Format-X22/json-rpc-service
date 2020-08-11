@@ -280,7 +280,8 @@ class Connector extends BasicService {
 
                 Logger.error(error);
 
-                process.exit(1);
+                reject(error);
+                return;
             }
 
             client.request(method, data, (error, response) => {
@@ -725,7 +726,8 @@ class Connector extends BasicService {
         ]) {
             if (error instanceof InternalErrorType) {
                 Logger.error('Internal route error:', error);
-                process.exit(1);
+                callback(error, null);
+                return;
             }
         }
 
@@ -781,38 +783,19 @@ class Connector extends BasicService {
     }
 
     async _checkOriginRequiredClient(service, { originRemoteAlias, connect }) {
-        const time = Date.now();
-        const self = this;
+        try {
+            const { alias } = await this.callService(service, '_ping', {});
 
-        async function check() {
-            try {
-                const { alias } = await self.callService(service, '_ping', {});
-
-                if (alias !== originRemoteAlias) {
-                    Logger.error(
-                        `Try connect to "${originRemoteAlias}", ` +
-                            `but gain response from "${alias}" service, check connection config`
-                    );
-                    process.exit(1);
-                }
-            } catch (error) {
-                if (time + 30_000 < Date.now()) {
-                    Logger.error(
-                        `Cant establish connection with "${service}" service use "${connect}"`
-                    );
-                    Logger.error('Explain:', error);
-                    process.exit(1);
-                }
-
-                await new Promise(resolve => {
-                    setTimeout(resolve, 100);
-                });
-
-                await check();
+            if (alias !== originRemoteAlias) {
+                Logger.error(
+                    `Try connect to "${originRemoteAlias}", ` +
+                        `but gain response from "${alias}" service, check connection config`
+                );
             }
+        } catch (error) {
+            Logger.error(`Cant establish connection with "${service}" service use "${connect}"`);
+            Logger.error('Explain:', error);
         }
-
-        await check();
     }
 }
 
