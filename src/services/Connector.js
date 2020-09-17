@@ -183,6 +183,20 @@ const Metrics = require('../utils/PrometheusMetrics');
  *  ```
  *
  * Либо можно добавлять их динамически через метод `addService`.
+ *
+ * Дополнительно можно указать строгий режим для алиасов - при запуске микросервис
+ * сделает ping-запросы на все необходимые микросервисы и проверит соответствие
+ * алиасов в ответах сервисов с указанными алиасами:
+ *
+ * ```
+ *  requiredClients: {
+ *      alias1: {
+ *          originRemoteAlias: 'alias1',
+ *          connect: 'http://connect.string1'
+ *      },
+ *  }
+ *  ...
+ *  ```
  */
 class Connector extends BasicService {
     /**
@@ -197,17 +211,20 @@ class Connector extends BasicService {
      * @param {string} [host] Адрес подключения, иначе возьмется из JRS_CONNECTOR_HOST.
      * @param {number} [port] Порт подключения, иначе возьмется из JRS_CONNECTOR_PORT.
      * @param {string} [socket] Сокет подключения, иначе возьмется из JRS_CONNECTOR_SOCKET.
+     * @param {string} [alias] Алиас коннектора в сети, иначе возьмется из JRS_CONNECTOR_ALIAS_NAME.
      */
     constructor({
         host = env.JRS_CONNECTOR_HOST,
         port = env.JRS_CONNECTOR_PORT,
         socket = env.JRS_CONNECTOR_SOCKET,
+        alias = env.JRS_CONNECTOR_ALIAS_NAME,
     } = {}) {
         super();
 
         this._host = host;
         this._port = port;
         this._socket = socket;
+        this._alias = alias;
 
         this._server = null;
         this._clientsMap = new Map();
@@ -230,7 +247,7 @@ class Connector extends BasicService {
         }
 
         if (requiredClients) {
-            this._makeClients(requiredClients);
+            await this._makeClients(requiredClients);
         }
     }
 
@@ -254,8 +271,20 @@ class Connector extends BasicService {
     sendTo(service, method, data) {
         return new Promise((resolve, reject) => {
             const startTs = Date.now();
+            const client = this._clientsMap.get(service);
 
-            this._clientsMap.get(service).request(method, data, (error, response) => {
+            if (!client) {
+                const error = new Error(
+                    `Fatal error - unknown service "${service}", check clients config or call point.`
+                );
+
+                Logger.error(error);
+
+                reject(error);
+                return;
+            }
+
+            client.request(method, data, (error, response) => {
                 if (error) {
                     reject(error);
                 } else {
@@ -282,24 +311,67 @@ class Connector extends BasicService {
      * @returns {Promise<*>} Ответ.
      */
     async callService(service, method, params) {
+        const loggerTemplate = this._makeCallServiceErrorLogger(service, method, params);
+
+        if (typeof params !== 'object') {
+            loggerTemplate(null)(
+                'Invalid remote call signature - params must be an object, ' +
+                    'call stopped and rejected'
+            );
+
+            throw { code: 500, message: 'Critical internal error' };
+        }
+
         const response = await this.sendTo(service, method, params);
 
-        if (response.error) {
+        if (!response.error) {
+            return response.result;
+        }
+
+        const logger = loggerTemplate(response.error);
+
+        if (typeof response.error !== 'object') {
+            logger('Non-standard plain error on remote service call');
+
             throw response.error;
         }
 
-        return response.result;
+        if (!Number.isFinite(response.error.code)) {
+            logger('Non-standard hinted error on remote service call');
+
+            throw response.error;
+        }
+
+        if (response.error.code < 0) {
+            logger('Remote service call RPC-error');
+
+            throw response.error;
+        }
+
+        logger('Remote service call safe provided error');
+
+        throw response.error;
     }
 
     /**
      * Динамически добавляет сервис к списку известных сервисов.
-     * @param {string} service Имя-алиас микросервиса.
-     * @param {string} connectString Строка подключения.
+     * @param {string} service Имя-алиас микросервиса для использования в коде при вызове.
+     * @param {string/Object} connectConfig Строка или конфиг подключения.
+     * @param {string} connectConfig.connect Строка подключения.
+     * @param {string/null} connectConfig.originRemoteAlias Реальное имя-алиас удаленного микросервиса.
      */
-    addService(service, connectString) {
-        const client = new jayson.client.http(connectString);
+    async addService(service, connectConfig) {
+        if (typeof connectConfig === 'string') {
+            connectConfig = { connect: connectConfig, originRemoteAlias: null };
+        }
+
+        const client = new jayson.client.http(connectConfig.connect);
 
         this._clientsMap.set(service, client);
+
+        if (connectConfig.originRemoteAlias) {
+            await this._checkOriginRequiredClient(service, connectConfig);
+        }
     }
 
     /**
@@ -359,6 +431,8 @@ class Connector extends BasicService {
         return new Promise((resolve, reject) => {
             const routes = this._normalizeRoutes(rawRoutes, serverDefaults);
 
+            this._injectPingRoute(routes);
+
             if (this.middlewareMode) {
                 this._middleware = jayson.server(routes).middleware();
                 resolve();
@@ -382,9 +456,9 @@ class Connector extends BasicService {
         });
     }
 
-    _makeClients(requiredClients) {
+    async _makeClients(requiredClients) {
         for (let alias of Object.keys(requiredClients)) {
-            this.addService(alias, requiredClients[alias]);
+            await this.addService(alias, requiredClients[alias]);
         }
     }
 
@@ -652,7 +726,8 @@ class Connector extends BasicService {
         ]) {
             if (error instanceof InternalErrorType) {
                 Logger.error('Internal route error:', error);
-                process.exit(1);
+                callback(error, null);
+                return;
             }
         }
 
@@ -668,6 +743,59 @@ class Connector extends BasicService {
 
         Logger.error(error);
         callback({}, null);
+    }
+
+    _makeCallServiceErrorLogger(service, method, params) {
+        if (typeof params === 'object') {
+            params = JSON.stringify(params);
+        }
+
+        return error => {
+            return description => {
+                const tokens = [
+                    description,
+                    `service alias = "${service}"`,
+                    `method = "${method}"`,
+                    `params = "${params}"`,
+                ];
+
+                // Yes, classic old school legacy JS bug with null as object
+                if (typeof error === 'object' && error !== null) {
+                    error = JSON.stringify(error);
+                }
+
+                if (error) {
+                    tokens.push(`error = "${error}"`);
+                }
+
+                Logger.error(tokens.join(', '));
+            };
+        };
+    }
+
+    _injectPingRoute(routes) {
+        routes._ping = (params, callback) => {
+            callback(null, {
+                status: 'OK',
+                alias: this._alias,
+            });
+        };
+    }
+
+    async _checkOriginRequiredClient(service, { originRemoteAlias, connect }) {
+        try {
+            const { alias } = await this.callService(service, '_ping', {});
+
+            if (alias !== originRemoteAlias) {
+                Logger.error(
+                    `Try connect to "${originRemoteAlias}", ` +
+                        `but gain response from "${alias}" service, check connection config`
+                );
+            }
+        } catch (error) {
+            Logger.error(`Cant establish connection with "${service}" service use "${connect}"`);
+            Logger.error('Explain:', error);
+        }
     }
 }
 
