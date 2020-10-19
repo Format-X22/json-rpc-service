@@ -59,8 +59,16 @@ class PrometheusMetrics {
 
         if (labels) {
             counter.inc(labels, count);
+
+            if (env.JRS_METRICS_TO_LOG) {
+                Logger.log(`METRICS: Inc ${metricName}:${JSON.stringify(labels)} by ${count}`);
+            }
         } else {
             counter.inc(count);
+
+            if (env.JRS_METRICS_TO_LOG) {
+                Logger.log(`METRICS: Inc ${metricName} by ${count}`);
+            }
         }
     }
 
@@ -76,8 +84,16 @@ class PrometheusMetrics {
 
         if (labels) {
             gauge.set(labels, value);
+
+            if (env.JRS_METRICS_TO_LOG) {
+                Logger.log(`METRICS: Set ${metricName}:${JSON.stringify(labels)} to ${value}`);
+            }
         } else {
             gauge.set(value);
+
+            if (env.JRS_METRICS_TO_LOG) {
+                Logger.log(`METRICS: Set ${metricName} to ${value}`);
+            }
         }
     }
 
@@ -92,8 +108,16 @@ class PrometheusMetrics {
 
         if (labels) {
             histogram.observe(labels, time);
+
+            if (env.JRS_METRICS_TO_LOG) {
+                Logger.log(`METRICS: Observe ${metricName}:${JSON.stringify(labels)} at ${time}`);
+            }
         } else {
             histogram.observe(time);
+
+            if (env.JRS_METRICS_TO_LOG) {
+                Logger.log(`METRICS: Observe ${metricName} at ${time}`);
+            }
         }
     }
 
@@ -104,6 +128,18 @@ class PrometheusMetrics {
      * @returns {Function}
      */
     startTimer(metricName, labels) {
+        if (labels) {
+            if (env.JRS_METRICS_TO_LOG) {
+                Logger.log(
+                    `METRICS: Start timer ${metricName}:${JSON.stringify(labels)} at ${new Date()}`
+                );
+            }
+        } else {
+            if (env.JRS_METRICS_TO_LOG) {
+                Logger.log(`METRICS: Start timer ${metricName} at ${new Date()}`);
+            }
+        }
+
         return this._getHistogram(metricName, labels).startTimer(labels);
     }
 
