@@ -23,8 +23,11 @@
     "lodash.template": "^4.5.0",
     "moment": "^2.29.1",
     "mongoose": "^5.11.8",
+    "pg": "^8.5.1",
+    "pg-hstore": "^2.3.3",
     "prom-client": "^11.5.3",
-    "sanitize-html": "^1.27.5"
+    "sanitize-html": "^1.27.5",
+    "sequelize": "^6.3.5"
   },
   "prettier": {
     "singleQuote": true,
