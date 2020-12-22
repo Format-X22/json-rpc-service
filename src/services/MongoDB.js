@@ -98,10 +98,10 @@ class MongoDB extends BasicService {
                 resolve();
             });
 
-            mongoose.connect(
-                forceConnectString || env.JRS_MONGO_CONNECT,
-                { useNewUrlParser: true, ...options }
-            );
+            mongoose.connect(forceConnectString || env.JRS_MONGO_CONNECT, {
+                useNewUrlParser: true,
+                ...options,
+            });
         });
     }
 
