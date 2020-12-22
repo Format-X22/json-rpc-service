@@ -22,7 +22,7 @@
     "jayson": "^2.1.2",
     "lodash.template": "^4.5.0",
     "moment": "^2.29.1",
-    "mongoose": "^5.10.19",
+    "mongoose": "^5.11.8",
     "prom-client": "^11.5.3",
     "sanitize-html": "^1.27.5"
   },
