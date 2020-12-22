@@ -19,6 +19,7 @@ module.exports = {
         defaultStarter: require('./src/utils/defaultStarter'),
         Content: require('./src/utils/Content'),
         Env: require('./src/utils/Env'),
+        KeyGen: require('./src/utils/KeyGen'),
     },
     types: {
         BigNum: require('./src/types/BigNum'),
