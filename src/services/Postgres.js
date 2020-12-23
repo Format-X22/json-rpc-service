@@ -24,6 +24,28 @@ class Postgres extends BasicService {
     }
 
     /**
+     * Конструирует модель по указанной схеме, также устанавливая стандартную
+     * конфигурацию - сохраняется момент создания, изменения и удаления каждой
+     * модели, при этом удаление в режиме параноид - вместо удаления происходит
+     * пометка о дате удаления, что также позволяет восстанавливать удаленное
+     * специализированным методом, либо всё же удалять в режиме force при
+     * действительной необходимости.
+     * @param {string} name Имя модели.
+     * @param {*} schemaConfig Конфигурация схемы для модели.
+     * @param {*} optionsConfig Дополнительные настройки для модели.
+     * @return Модель postgres sequelize.
+     */
+    static makeModel(name, schemaConfig, optionsConfig = {}) {
+        optionsConfig.paranoid = true;
+        optionsConfig.timestamps = true;
+        optionsConfig.createdAt = 'createTimestamp';
+        optionsConfig.updatedAt = 'updateTimestamp';
+        optionsConfig.deletedAt = 'destroyTime';
+
+        return this._sequelizeInstance.define(name, schemaConfig, optionsConfig);
+    }
+
+    /**
      * Запуск.
      * @param {*} args Аргументы, которые будут переданы предку (BasicService).
      * @return {Promise<void>}
@@ -58,28 +80,6 @@ class Postgres extends BasicService {
         await super.stop(...args);
 
         await this._sequelizeInstance.close();
-    }
-
-    /**
-     * Конструирует модель по указанной схеме, также устанавливая стандартную
-     * конфигурацию - сохраняется момент создания, изменения и удаления каждой
-     * модели, при этом удаление в режиме параноид - вместо удаления происходит
-     * пометка о дате удаления, что также позволяет восстанавливать удаленное
-     * специализированным методом, либо всё же удалять в режиме force при
-     * действительной необходимости.
-     * @param {string} name Имя модели.
-     * @param {*} schemaConfig Конфигурация схемы для модели.
-     * @param {*} optionsConfig Дополнительные настройки для модели.
-     * @return Модель postgres sequelize.
-     */
-    makeModel(name, schemaConfig, optionsConfig = {}) {
-        optionsConfig.paranoid = true;
-        optionsConfig.timestamps = true;
-        optionsConfig.createdAt = 'createTimestamp';
-        optionsConfig.updatedAt = 'updateTimestamp';
-        optionsConfig.deletedAt = 'destroyTime';
-
-        return this._sequelizeInstance.define(name, schemaConfig, optionsConfig);
     }
 }
 
