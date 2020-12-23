@@ -7,6 +7,8 @@ const env = require('../data/env');
  * Обертка для работы с базой данных Postgres через sequelize.
  * Автоматически подключается к базе данных при запуске.
  * Необходимо указать соответствующие ENV для подключения.
+ *
+ * Поддерживает подключение только к одной базе данных.
  */
 class Postgres extends BasicService {
     /**
@@ -36,6 +38,10 @@ class Postgres extends BasicService {
      * @return Модель postgres sequelize.
      */
     static makeModel(name, schemaConfig, optionsConfig = {}) {
+        if (!this._sequelizeInstance) {
+            throw new Error('Try make model before start service');
+        }
+
         optionsConfig.paranoid = true;
         optionsConfig.timestamps = true;
         optionsConfig.createdAt = 'createTimestamp';
@@ -53,7 +59,7 @@ class Postgres extends BasicService {
     async start(...args) {
         await super.start(...args);
 
-        this._sequelizeInstance = new sequelize.Sequelize({
+        BasicService._sequelizeInstance = new sequelize.Sequelize({
             dialect: 'postgres',
             username: env.JRS_POSTGRES_USERNAME,
             password: env.JRS_POSTGRES_PASSWORD,
@@ -64,7 +70,7 @@ class Postgres extends BasicService {
         });
 
         try {
-            await this._sequelizeInstance.authenticate();
+            await BasicService._sequelizeInstance.authenticate();
             Logger.log('Connection to Postgres has been established successfully.');
         } catch (error) {
             Logger.error('Unable to connect to Postgres', error);
@@ -79,7 +85,7 @@ class Postgres extends BasicService {
     async stop(...args) {
         await super.stop(...args);
 
-        await this._sequelizeInstance.close();
+        await BasicService._sequelizeInstance.close();
     }
 }
 
