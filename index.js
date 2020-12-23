@@ -7,6 +7,7 @@ module.exports = {
         Basic: require('./src/services/Basic'),
         BasicMain: require('./src/services/BasicMain'),
         MongoDB: require('./src/services/MongoDB'),
+        Postgres: require('./src/services/Postgres'),
         Connector: require('./src/services/Connector'),
         WebServer: require('./src/services/WebServer'),
     },
