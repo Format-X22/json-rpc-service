@@ -1,5 +1,6 @@
 const Basic = require('./Basic');
 const MongoDB = require('../services/MongoDB');
+const Postgres = require('../services/Postgres');
 const Logger = require('../utils/Logger');
 const Metrics = require('../utils/PrometheusMetrics');
 
@@ -33,14 +34,15 @@ class BasicMain extends Basic {
         this._startMongoBeforeBoot = false;
         this._mongoDbForceConnectString = null;
         this._mongoDbOptions = {};
+        this._startPostgresBeforeBoot = false;
         this._metrics = new Metrics();
     }
 
     async start() {
-        await this._tryStartMongoBeforeBoot();
+        await this._tryStartDbBeforeBoot();
         await this.boot();
         await this.startNested();
-        this._tryIncludeMongoToNested();
+        this._tryIncludeDbToNested();
 
         this._metrics.inc('service_start');
     }
@@ -76,31 +78,64 @@ class BasicMain extends Basic {
         return this._mongoDb || null;
     }
 
-    async _tryStartMongoBeforeBoot() {
+    /**
+     * Подключит и запустит сервис работы
+     * с базой данных Postgres до запуска метода boot.
+     * Сразу сохраняет инстанс сервиса Postgres внутри класса.
+     */
+    startPostgresBeforeBoot() {
+        this._postgres = new Postgres();
+        this._startPostgresBeforeBoot = true;
+    }
+
+    /**
+     * Получить инстанс сервиса Postgres, если он есть.
+     * Инстанс будет не запущенным до старта этого сервиса.
+     * @return {Postgres/null} Инстанс.
+     */
+    getPostgresInstance() {
+        return this._postgres || null;
+    }
+
+    _tryIncludeDbToNested() {
+        if (this._startMongoBeforeBoot) {
+            this._nestedServices.unshift(this._mongoDb);
+        }
+
+        if (this._startPostgresBeforeBoot) {
+            this._nestedServices.unshift(this._postgres);
+        }
+    }
+
+    async _tryStartDbBeforeBoot() {
         if (this._startMongoBeforeBoot) {
             Logger.info(`Start MongoDB...`);
             await this._mongoDb.start(this._mongoDbForceConnectString, this._mongoDbOptions);
             Logger.info(`The MongoDB done!`);
 
-            this._tryExcludeMongoFromNested();
+            this._tryExcludeDbFromNested(MongoDB);
+        }
+
+        if (this._startPostgresBeforeBoot) {
+            Logger.info(`Start Postgres...`);
+            await this._postgres.start();
+            Logger.info(`The Postgres done!`);
+
+            this._tryExcludeDbFromNested(Postgres);
         }
     }
 
-    _tryExcludeMongoFromNested() {
+    _tryExcludeDbFromNested(Class) {
+        const name = Class.name;
+
         this._nestedServices = this._nestedServices.filter(service => {
-            if (service instanceof MongoDB) {
-                Logger.warn('Exclude MongoDB from nested services - startMongoBeforeBoot used');
+            if (service instanceof Class) {
+                Logger.warn(`Exclude ${name} from nested services - start${name}BeforeBoot used`);
                 return false;
             } else {
                 return true;
             }
         });
-    }
-
-    _tryIncludeMongoToNested() {
-        if (this._startMongoBeforeBoot) {
-            this._nestedServices.unshift(this._mongoDb);
-        }
     }
 }
 
