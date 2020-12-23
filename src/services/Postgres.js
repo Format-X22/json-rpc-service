@@ -10,6 +10,20 @@ const env = require('../data/env');
  */
 class Postgres extends BasicService {
     /**
+     * @return Модуль sequelize целиком.
+     */
+    static get sequelizeLib() {
+        return sequelize;
+    }
+
+    /**
+     * @return Набор типов данных для моделей.
+     */
+    static get types() {
+        return sequelize.DataTypes;
+    }
+
+    /**
      * Запуск.
      * @param {*} args Аргументы, которые будут переданы предку (BasicService).
      * @return {Promise<void>}
@@ -44,20 +58,6 @@ class Postgres extends BasicService {
         await super.stop(...args);
 
         await this._sequelizeInstance.close();
-    }
-
-    /**
-     * @return Модуль sequelize целиком.
-     */
-    get sequelizeLib() {
-        return sequelize;
-    }
-
-    /**
-     * @return Набор типов данных для моделей.
-     */
-    get types() {
-        return sequelize.DataTypes;
     }
 
     /**
