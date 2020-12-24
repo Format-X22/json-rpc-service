@@ -33,7 +33,7 @@ class MongoDB extends BasicService {
      * О схемах детальнее описано в документации Mongoose.
      * @param {Object} optionsConfig.schema Дополнительные общие настройки
      * для Mongoose схемы.
-     * @returns {Model} Модель.
+     * @returns Модель.
      */
     static makeModel(name, schemaConfig, optionsConfig = {}) {
         const schema = new mongoose.Schema(
@@ -53,7 +53,7 @@ class MongoDB extends BasicService {
     /**
      * Получение объекта драйвера, который используется в данном классе.
      * Необходимо для выполнения операций непосредственно с голым драйвером mongoose
-     * @returns {Mongoose}
+     * @returns Модуль.
      */
     static get mongoose() {
         return mongoose;
@@ -62,7 +62,7 @@ class MongoDB extends BasicService {
     /**
      * Получение типов схем, необходимо для обозначения особых
      * типов полей для моделей.
-     * @returns {Mongoose.Schema.Types} Типы схем.
+     * @returns Типы схем.
      */
     static get schemaTypes() {
         return mongoose.Schema.Types;
@@ -70,7 +70,7 @@ class MongoDB extends BasicService {
 
     /**
      * Получение коллекции конструкторов типов данных MongoDB.
-     * @returns {Mongoose.Types} Типы схем.
+     * @returns Типы схем.
      */
     static get mongoTypes() {
         return mongoose.Types;
@@ -98,10 +98,10 @@ class MongoDB extends BasicService {
                 resolve();
             });
 
-            mongoose.connect(
-                forceConnectString || env.JRS_MONGO_CONNECT,
-                { useNewUrlParser: true, ...options }
-            );
+            mongoose.connect(forceConnectString || env.JRS_MONGO_CONNECT, {
+                useNewUrlParser: true,
+                ...options,
+            });
         });
     }
 

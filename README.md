@@ -71,3 +71,13 @@
 -   `JRS_CONNECTOR_ALIAS_NAME` - алиас-имя микросервиса, которым он представляется другим микросервисам,
     например при внутреннем пинг-запросе  
     Дефолтное значение - `anonymous`
+
+-   `JRS_POSTGRES_USERNAME` - имя пользователя при подключении к Postgres базе данных.
+
+-   `JRS_POSTGRES_PASSWORD` - пароль при подключении к Postgres базе данных.
+
+-   `JRS_POSTGRES_HOST` - хост при подключении к Postgres базе данных.
+
+-   `JRS_POSTGRES_PORT` - порт при подключении к Postgres базе данных.
+
+-   `JRS_POSTGRES_DATABASE` - имя базы данных при подключении к Postgres базе данных.

