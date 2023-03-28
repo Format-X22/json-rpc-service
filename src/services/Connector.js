@@ -8,18 +8,18 @@ const BasicService = require('./Basic');
 const Metrics = require('../utils/PrometheusMetrics');
 
 /**
- * Сервис связи между микросервисами.
- * При необходимости поднимает сервер обработки входящих подключений и/или
- * обработчики запросов исходящих запросов.
- * Работает посредством JSON-RPC.
- * Сервер связи конфигурируется объектом роутинга в двух вариациях.
+ * Communication service between microservices.
+ * If necessary, raises the incoming connection processing server and/or
+ * outgoing request handlers.
+ * It works via JSON-RPC.
+ * The communication server is configured by the routing object in two variations.
  *
- * Может работать в режиме middleware.
- * При вместо создания сервера будет доступен метод getMiddleware,
- * возвращающий middleware, совместимый с классом WebServer
- * и библиотекой ExpressJS.
+ * It can work in middleware mode.
+ * Instead of creating a server, the get Middleware method will be available,
+ * returning middleware compatible with the WebServer class
+ * and the ExpressJS library.
  *
- * Лаконичная:
+ * Concise:
  *
  * ```
  * serverRoutes: {
@@ -29,14 +29,14 @@ const Metrics = require('../utils/PrometheusMetrics');
  * ...
  * ```
  *
- * Полная и с ajv валидацией:
+ * Complete and with ajv validation:
  *
  * ```
  * serverRoutes: {
  *     transfer: {
- *         handler: this._handler,  // Обработчик вызова
- *         scope: this,             // Скоуп вызова обработчика
- *         validation: {            // ajv-схема валидации параметров
+ *         handler: this._handler,  // Call Handler
+ *         scope: this,             // Scope Handler call
+ *         validation: {            // ajv-parameter validation scheme
  *             required: ['name'],
  *             properties: {
  *                 name: {
@@ -52,25 +52,25 @@ const Metrics = require('../utils/PrometheusMetrics');
  * ...
  * ```
  *
- * Стоит учитывать что валидация сразу устанавливает запрет на отправку дополнительных
- * полей и предполагает что параметры будут именно объектом, что соответствует
- * конфигу ajv:
+ * It should be borne in mind that validation immediately prohibits sending additional
+ * fields and assumes that the parameters will be exactly the object that corresponds
+ * to the ajv config:
  *
  * ```
  * type: 'object',
  * additionalProperties: false,
  * ```
  *
- * Также имеется возможность указать пре-обработчики и пост-обработчики.
- * Пре, пост и оргигинальный обработчик работают по принципу конвеера -
- * если они что-либо возвращают - оно будет передано далее, в ином случае
- * далее будет переданы оригинальные аргументы, но передачей по ссылке -
- * если аргумент был объектом и его поля были изменены - изменения
- * будут содержаться и в следующем обработчике. Самый первый обработчик
- * получает оригинал данных от клиента, а данные последнего обработчика
- * будут отправлены клиенту как ответ. Особое поведение лишь у оригинального
- * обработчика - в случае отсутствия ответа (значение undefined)
- * будет передано именно это значение, а не аргументы.
+ * It is also possible to specify pre-handlers and post-handlers.
+ * The pre, post and orginal handler work on the principle of a conveyor -
+ * if they return something, it will be passed on, otherwise
+ * the original arguments will be passed on, but by passing by reference -
+ * if the argument was an object and its fields were changed, the changes
+ * will be contained in the next handler. The very first handler
+ * receives the original data from the client, and the data of the last handler
+ * will be sent to the client as a response. Special behavior only in the original
+ * handler - if there is no response (undefined value)
+ * , this value will be passed, not arguments.
  *
  * ```
  * serverRoutes: {
@@ -91,34 +91,34 @@ const Metrics = require('../utils/PrometheusMetrics');
  *                 scope: this,
  *             },
  *         ]
- *         handler: this._handler,  // Обработчик вызова
- *         scope: this,             // Скоуп вызова обработчика
+ *         handler: this._handler,  // Call Handler
+ *         scope: this,             // Scope Handler call
  *     }
  * }
  * ...
  * ```
  *
- * При необходимости можно вынести повторяющиеся части в дефолтный конфиг
- * и унаследоваться от него через алиас.
- * В случае указания одного или нескольких extends сначала будет взят
- * первый конфиг, сверху добавлены с перезаписью и глубоким мержем
- * остальные, в конце добавляется оригинал.
+ * If necessary, you can put duplicate parts in the default config
+ * and inherit from it via alias.
+ * In the case of specifying one or more extends
+ * , the first config will be taken first, the rest will be added from above with overwriting and a deep merge
+ * , the original is added at the end.
  *
- * В данном примере мы создаем роут 'transfer' и наследуем валидацию
- * от конфига 'auth', которая добавляет нам обязательное поле 'secret'.
+ * In this example, we create a 'transfer' router and inherit validation
+ * from the 'auth' config, which adds the required 'secret' field to us.
  *
  * ```
  * serverRoutes: {
  *     transfer: {
- *         handler: this._handler,  // Обработчик вызова
- *         scope: this,             // Скоуп вызова обработчика
- *         inherits: ['auth']       // Имя парент-конфига
+ *         handler: this._handler,  // Call Handler
+ *         scope: this,             // Scope Handler call
+ *         inherits: ['auth']       // Parent config name
  *     }
  * },
  * serverDefaults: {
- *     parents: {                         // Пречисление конфигов
- *         auth: {                        // Имя конфига
- *             validation: {              // Дефолтные данные валидации.
+ *     parents: {                         // Listing configs
+ *         auth: {                        // Config name
+ *             validation: {              // Default validation data.
  *                 required: ['secret'],
  *                 properties: {
  *                     secret: {
@@ -132,13 +132,13 @@ const Metrics = require('../utils/PrometheusMetrics');
  * ...
  * ```
  *
- * Для удобства валидации можно добавить собственные типы валидации
- * основанные на базовых. Типы поддерживаются внутри конфигурации
- * properties, а также внутри oneOf, anyOf и allOf.
+ * For the convenience of validation, you can add your own validation types
+ * based on the basic ones. Types are supported inside
+ * the properties configuration, as well as inside one Of, anyOf, and allOf.
  *
- * В данном примере мы добавляем и используем тип, который валидирует
- * параметр как строку, устанавливает максимальную длинну в 100 символов,
- * а также разрешаем параметру быть типом null.
+ * In this example, we add and use a type that validates the
+ * parameter as a string, sets the maximum length to 100 characters,
+ * and also allows the parameter to be null.
  *
  * ```
  * serverRoutes: {
@@ -149,30 +149,30 @@ const Metrics = require('../utils/PrometheusMetrics');
  *             required: ['message']
  *             properties: {
  *                 message: {
- *                     type: 'message'   // Используем наш нестандартный тип
+ *                     type: 'message'   // We use our non-standard type
  *                 }
  *             }
  *         }
  *     }
  * },
  * serverDefaults: {
- *     validationTypes: {                // Объявляем что у нас есть нестандартные типы
- *         message: {                    // Указываем имя типа
- *             type: 'stringOrNull',     // Используем в основе наш тип 'stringOrNull'
- *             maxLength: 100            // Устанавливаем дополнительную валидацию
+ *     validationTypes: {                // We declare that we have non-standard types
+ *         message: {                    // Specify the type name
+ *             type: 'stringOrNull',     // We use our 'stringOrNull' type as the basis
+ *             maxLength: 100            // Installing additional validation
  *         },
- *         stringOrNull: {               // Указываем имя типа
- *             type: ['string', 'null']  // Используем встроенные типы 'string' и 'null'
+ *         stringOrNull: {               // Specify the type name
+ *             type: ['string', 'null']  // We use the built-in types 'string' and 'null'
  *         }
  *     }
  * }
  * ```
  *
- * Для того чтобы использовать метод `callService` необходимо задать алиасы
- * запросов - алиас является именем, которое указывает на ссылку куда необходимо
- * отправить запрос. Задать их можно двумя способами.
+ * In order to use the `callService` method, you need to specify the aliases
+ * of requests - the alias is the name that points to the link where you need
+ * to send the request. There are two ways to set them.
  *
- * Сразу в конфигурации в методе `start`:
+ * Immediately in the configuration in the `start` method:
  *
  *  ```
  *  requiredClients: {
@@ -182,11 +182,11 @@ const Metrics = require('../utils/PrometheusMetrics');
  *  ...
  *  ```
  *
- * Либо можно добавлять их динамически через метод `addService`.
+ * Or you can add them dynamically via the `addService` method.
  *
- * Дополнительно можно указать строгий режим для алиасов - при запуске микросервис
- * сделает ping-запросы на все необходимые микросервисы и проверит соответствие
- * алиасов в ответах сервисов с указанными алиасами:
+ * Additionally, you can specify a strict mode for aliases - at startup, the microservice
+ * will make ping requests to all the necessary microservices and check whether the
+ * aliases in the service responses match the specified aliases:
  *
  * ```
  *  requiredClients: {
@@ -200,18 +200,18 @@ const Metrics = require('../utils/PrometheusMetrics');
  */
 class Connector extends BasicService {
     /**
-     * Переключить в режим middleware.
-     * Вместо создания сервера будет доступен метод getMiddleware,
-     * возвращающий middleware, совместимый с классом Server (ExpressJS).
-     * @type {boolean} Включение.
+     * Switch to middleware mode.
+     * Instead of creating a server, the get Middleware method will be available,
+     * returning middleware compatible with the Server (Express) class.
+     * @type {boolean} Enabling.
      */
     middlewareMode = false;
 
     /**
-     * @param {string} [host] Адрес подключения, иначе возьмется из JRS_CONNECTOR_HOST.
-     * @param {number} [port] Порт подключения, иначе возьмется из JRS_CONNECTOR_PORT.
-     * @param {string} [socket] Сокет подключения, иначе возьмется из JRS_CONNECTOR_SOCKET.
-     * @param {string} [alias] Алиас коннектора в сети, иначе возьмется из JRS_CONNECTOR_ALIAS_NAME.
+     * @param {string} [host] Connection address, otherwise it will be taken from JRS_CONNECTOR_HOST.
+     * @param {number} [port] Connection port, otherwise it will be taken from JRS_CONNECTOR_PORT.
+     * @param {string} [socket] Connection socket, otherwise it will be taken from JRS_CONNECTOR_SOCKET.
+     * @param {string} [alias] The alias of the connector in the network, otherwise it will be taken from JRS_CONNECTOR_ALIAS_NAME.
      */
     constructor({
         host = env.JRS_CONNECTOR_HOST,
@@ -234,12 +234,12 @@ class Connector extends BasicService {
     }
 
     /**
-     * Запуск сервиса с конфигурацией.
-     * Все параметры являются не обязательными.
-     * @param [serverRoutes] Конфигурация роутера, смотри описание класса.
-     * @param [serverDefaults] Конфигурация дефолтов сервера, смотри описание класса.
-     * @param [requiredClients] Конфигурация необходимых клиентов, смотри описание класса.
-     * @returns {Promise<void>} Промис без экстра данных.
+     * Launching the service with the configuration.
+     * * All parameters are optional.
+     * @param [server Routes] Router configuration, see the class description.
+     * @param [server Defaults] Configuration of server defaults, see the class description.
+     * @param [requiredClients] Configuration of required clients, see the class description.
+     * @returns {Promise<void>} Promise without extra data.
      */
     async start({ serverRoutes, serverDefaults = {}, requiredClients }) {
         if (serverRoutes) {
@@ -252,8 +252,8 @@ class Connector extends BasicService {
     }
 
     /**
-     * Остановка сервиса.
-     * @returns {Promise<void>} Промис без экстра данных.
+     * Stopping the service.
+     * @returns {Promise<void>} Promise without extra data.
      */
     async stop() {
         if (this._server) {
@@ -262,11 +262,11 @@ class Connector extends BasicService {
     }
 
     /**
-     * Оправка данных указанному микросервису.
-     * @param {string} service Имя-алиас микросервиса.
-     * @param {string} method Метод JSON-RPC.
-     * @param {*} data Любые данные.
-     * @returns {Promise<*>} Данные ответа либо ошибка.
+     * Sending data to the specified microservice.
+     * @param {string} service Name is the alias of the microservice.
+     * @param {string} method JSON-RPC method.
+     * @param {*} data Any data.
+     * @returns {Promise<*>} Response data or error.
      */
     sendTo(service, method, data) {
         return new Promise((resolve, reject) => {
@@ -304,11 +304,11 @@ class Connector extends BasicService {
     }
 
     /**
-     * Вызов метода микросервиса.
-     * @param {string} service Имя-алиас микросервиса.
-     * @param {string} method Метод JSON-RPC.
-     * @param {Object} params Параметры запроса.
-     * @returns {Promise<*>} Ответ.
+     * Calling the microservice method.
+     * @param {string} service Name is the alias of the microservice.
+     * @param {string} method JSON-RPC method.
+     * @param {Object} params Request parameters.
+     * @returns {Promise<*>} Answer.
      */
     async callService(service, method, params) {
         const loggerTemplate = this._makeCallServiceErrorLogger(service, method, params);
@@ -354,11 +354,11 @@ class Connector extends BasicService {
     }
 
     /**
-     * Динамически добавляет сервис к списку известных сервисов.
-     * @param {string} service Имя-алиас микросервиса для использования в коде при вызове.
-     * @param {string/Object} connectConfig Строка или конфиг подключения.
-     * @param {string} connectConfig.connect Строка подключения.
-     * @param {string/null} connectConfig.originRemoteAlias Реальное имя-алиас удаленного микросервиса.
+     * Dynamically adds a service to the list of known services.
+     * @param {string} service Name-the alias of the microservice to be used in the code when calling.
+     * @param {string/Object} connectConfig String or connection config.
+     * @param {string} connectConfig.connect Connection string.
+     * @param {string/null} connectConfig.originRemoteAlias Real name is the alias of the remote microservice.
      */
     async addService(service, connectConfig) {
         if (typeof connectConfig === 'string') {
@@ -375,52 +375,52 @@ class Connector extends BasicService {
     }
 
     /**
-     * Получить текущее значение, которое возвращается
-     * в ответе в случае если ответ пуст (эквивалентен false)
-     * или равен 'Ok' (legacy).
-     * Дефолтное значение - { status: 'OK' }.
-     * @return {*} Значение.
+     * Get the current value that is returned
+     * in the response if the response is empty (equivalent to false)
+     * or equal to 'Ok' (legacy).
+     * The default value is { status: 'OK' }.
+     * @return {*} Value.
      */
     getDefaultResponse() {
         return this._defaultResponse;
     }
 
     /**
-     * Установить значение, которое возвращается
-     * в ответе в случае если ответ пуст (эквивалентен false)
-     * или равен 'Ok' (legacy).
-     * Дефолтное значение - { status: 'OK' }.
-     * @param {*} value Значение.
+     * Set the value that is returned
+     * in the response if the response is empty (equivalent to false)
+     * or equal to 'Ok' (legacy).
+     * The default value is { status: 'OK' }.
+     * @param {*} value Value.
      */
     setDefaultResponse(value) {
         this._defaultResponse = value;
     }
 
     /**
-     * Включить коррекцию ответа в случае пустого ответа
-     * (эквивалентного false) или равного 'Ok' (legacy),
-     * которая заменяет пустой ответ на дефолтный
-     * (например на { status: 'OK' }).
-     * Изначально включено.
+     * Enable response correction in case of an empty response
+     * (equivalent to false) or equal to 'Ok' (legacy),
+     * which replaces an empty response with a default one
+     * (for example on {status: 'OK' }).
+     * Initially enabled.
      */
     enableEmptyResponseCorrection() {
         this._useEmptyResponseCorrection = true;
     }
 
     /**
-     * Выключить коррекцию ответа в случае пустого ответа
-     * (эквивалентного false) или равного 'Ok' (legacy),
-     * которая заменяет пустой ответ на дефолтный
-     * (например на { status: 'OK' }).
-     * Изначально включено.
+     * Disable response correction in case of an empty response
+     * (equivalent to false) or equal to 'Ok' (legacy),
+     * which replaces an empty response with a default one
+     * (for example on {status: 'OK' }).
+     * Initially enabled.
      */
     disableEmptyResponseCorrection() {
         this._useEmptyResponseCorrection = false;
     }
 
     /**
-     * Получить middleware в случае если коннектор запущен
-     * в соответствующем режиме.
+     * Get middleware if the connector is running
+     * in the appropriate mode.
      * @return {Function} middleware.
      */
     getMiddleware() {

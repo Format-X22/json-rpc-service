@@ -3,60 +3,60 @@ const Logger = require('../utils/Logger');
 const env = require('../data/env');
 
 /**
- * Базовый сервис, выступающий в роле абстрактного сервиса с частью уже
- * реализованных методов. Предполагается использование только через
- * наследование.
+ * Basic service acting as an abstract service with a part already
+ * implemented methods. It is supposed to be used only through
+ * inheritance.
  *
- * Содержит метод запуска, который непосредственно запускает сервис, отдельно
- * от конструктора. Одна из причин подобного разделения - сервис может
- * запускать бесконечные циклы, исполняемые в нужные промежутки времени.
- * Соответственно содержит метод остановки, который зачищает за собой всё
- * что необходимо, останавливает циклы, являясь неким деструктором, безопасно
- * завершая сервис. Дополнительно предусмотрен метод восстановления сервиса,
- * который восстанавливает стейт после сбоя, воссоздавая то что нужно или
- * уничтожая не валидное. Также предусмотрен метод повторной попытки выполнения
- * действия. Для сервисов, которые являются конечными и могут быть завершены
- * явно - предусмотрен односторонний механизм установки состояния сервиса в
- * завершенное состояние, а также метод проверки этого.
+ * Contains a startup method that directly starts the service, separately
+ * from the designer. One of the reasons for this separation is that the service can
+ * run infinite loops executed at the right time intervals.
+ * Accordingly contains a stop method that cleans up everything behind it
+ * what is necessary, stops cycles, being a kind of destructor, safely
+ * completing the service. Additionally, a method for restoring the service is provided,
+ * which restores the state after a failure, recreating what is needed or
+ * destroying what is not valid. A method of retry execution is also provided
+ * actions. For services that are finite and can be terminated
+ * explicitly - there is a one-way mechanism for setting the state of the service in
+ * the completed state, as well as the method of checking it.
  *
- * Для организации бесконечных или условно конечных циклов предусмотрен
- * механизм исполнения итераций, который вызывает соответствующий метод
- * каждый указанный промежуток времени, при этом с возможностью переопределить
- * время старта первой итерации т.к. бывает необходимость запустить её через
- * совсем иное время или же сразу. Также присутствует метод остановки
- * итератора.
+ * For the organization of infinite or conditionally finite cycles is provided
+ * the iteration execution mechanism that calls the corresponding method
+ * each specified period of time, with the possibility to redefine
+ * the start time of the first iteration because there is a need to run it through
+ * a completely different time or immediately. There is also a stop method
+ * iterator.
  *
- * Сервисы могут содержать вложенные сервисы, которые хранятся в
- * специализированной коллекции. Также присутствуют методы для запуска
- * и остановки вложенных сервисов, которые в свою очередь могут содержать
- * свои собственные вложенные сервисы, что позволяет организовывать
- * древовидную архитектуру зависимых сервисов и автоматически включать и
- * выключать необходимые ветви. При этом этот процесс может быть асинхронным.
+ * Services may contain nested services that are stored in a
+ * specialized collection. There are also methods to run
+ * and stops of nested services, which in turn may contain
+ * its own nested services, which allows you to organize
+ * a tree-like architecture of dependent services and automatically enable and
+ * turn off the necessary branches. At the same time, this process can be asynchronous.
  *
- * Вложенные сервисы останавливаются в обратном порядке относительно запуска.
+ * Nested services are stopped in reverse order relative to startup.
  *
- * Дополнительно предусмотренна установка сервиса в режим автоотключения
- * при завершении процесса по сигналу SIGINT (Ctrl-C и прочее).
+ * Additionally, the installation of the service in the auto-shutdown mode
+ * is provided * when the process is completed by the SIGINT signal (Ctrl-C and so on).
  *
- * Каждый сервис снабжен эмиттером эвентов, являющимся инстансом
- * стандарнтого EventEmitter от NodeJS. Для удобства имеются методы-шоткаты
- * emit и on, для других действий с эвентами необходимо напрямую использовать
- * интсанс, получаемый по getEmitter(). Также возможно транслировать эвенты
- * из других объектов через себя.
+ * Each service is equipped with an event emitter, which is an instance
+ * of the * standard EventEmitter from NodeJS. For convenience, there are methods-shotcats
+ * emit and on, for other actions with events, you must directly use the
+ * intsance received by getEmitter(). It is also possible to broadcast events
+ * from other objects through yourself.
  *
- * Для удобства есть возможность указывать
- * асинхронную логику запуска в методе boot.
+ * For convenience, it is possible to specify
+ * asynchronous startup logic in the boot method.
  */
 class Basic {
     /**
-     * Разрешить параллельный запуск интераций.
-     * @type {boolean} Разрешение.
+     * * Allow parallel running of iterations.
+     * @type {boolean} Permission.
      */
     allowParallelIterations = true;
 
     /**
-     * Прокидывать ли ошибку в итерации дальше.
-     * @type {boolean} Разрешение.
+     * Whether to throw the error in the iteration further.
+     * @type {boolean} Permission.
      */
     throwOnIterationError = true;
 
@@ -70,78 +70,78 @@ class Basic {
     }
 
     /**
-     * Проверка сервиса на факт завершенности.
-     * @returns {boolean} Результат проверки.
+     * Checking the service for completeness.
+     * @returns {boolean} The result of the check.
      */
     isDone() {
         return this._done;
     }
 
     /**
-     * Пометка сервиса как завершенного.
+     * Marking the service as completed.
      */
     done() {
         this._done = true;
     }
 
     /**
-     * Старт сервиса.
-     * @param {...*} [args] Аргументы.
-     * @returns {Promise<void>} Промис без экстра данных.
+     * Start of the service.
+     * @param {...*} [args] Arguments.
+     * @returns {Promise<void>} Promise without extra data.
      */
     async start(...args) {
         await this.startNested();
     }
 
     /**
-     * Остановка сервиса.
-     * @param {...*} [args] Аргументы.
-     * @returns {Promise<void>} Промис без экстра данных.
+     * Stopping the service.
+     * @param {...*} [args] Arguments.
+     * @returns {Promise<void>} Promise without extra data.
      */
     async stop(...args) {
         await this.stopNested();
     }
 
     /**
-     * Абстрактный метод восстановления сервиса, не требует необходимости
-     * в имплементации.
-     * @param {...*} [args] Аргументы.
-     * @returns {Promise<void>} Промис без экстра данных.
+     * Abstract method of restoring the service, does not require the need
+     * in implementation.
+     * @param {...*} [args] Arguments.
+     * @returns {Promise<void>} Promise without extra data.
      */
     async restore(...args) {
         // Do nothing
     }
 
     /**
-     * Абстракнтный метод повторной попытки совершения действия.
-     * @param {...*} [args] Аргументы.
-     * @returns {Promise<void>} Промис без экстра данных.
+     * Abstract method of re-attempting an action.
+     * @param {...*} [args] Arguments.
+     * @returns {Promise<void>} Promise without extra data.
      */
     async retry(...args) {
         // Do nothing
     }
 
     /**
-     * Абстрактный асинхронный метод, который предполагается запускать
-     * при старте сервиса для выполнения какой-либо асинхронной логики,
-     * которую нельзя поместить в конструктор.
-     * @returns {Promise<void>} Промис без экстра данных.
+     * Abstract asynchronous method that is supposed to run
+     * when starting the service to perform any asynchronous logic,
+     * which cannot be placed in the constructor.
+     * @returns {Promise<void>} Promise without extra data.
      */
     async boot() {
         // abstract
     }
 
     /**
-     * Добавляет сервисы в зависимость к этому сервису.
-     * @param {Basic} services Сервисы.
+     * Adds services as a dependency to this service.
+     * @param {Basic} services Services.
      */
     addNested(...services) {
         this._nestedServices.push(...services);
     }
 
     /**
-     * Запускает все зависимые сервисы.
-     * @returns {Promise<void>} Промис без экстра данных.
+     * Starts all dependent services.
+     * @returns {Promise<void>} Promise without extra data.
      */
     async startNested() {
         Logger.info('Start services...');
@@ -156,8 +156,8 @@ class Basic {
     }
 
     /**
-     * Останавливает все зависимые сервисы.
-     * @returns {Promise<void>} Промис без экстра данных.
+     * Stops all dependent services.
+     * @returns {Promise<void>} Promise without extra data.
      */
     async stopNested() {
         Logger.info('Cleanup...');
@@ -176,16 +176,16 @@ class Basic {
     }
 
     /**
-     * Устанавливает обработчик на сигнал SIGINT (Ctrl-C и прочее),
-     * который вызывает метод stop.
+     * Sets the handler to the SIGINT signal (Ctrl-C, etc.),
+     * which calls the stop method.
      */
     stopOnExit() {
         process.on('SIGINT', this.stop.bind(this));
     }
 
     /**
-     * Завершает процесс с ошибкой в случае обнаружения необработанного
-     * реджекта/ошибки промиса.
+     * Terminates the process with an error if an unprocessed
+     * correction/promise errors.
      */
     throwOnUnhandledPromiseRejection() {
         process.on('unhandledRejection', error => {
@@ -195,18 +195,18 @@ class Basic {
     }
 
     /**
-     * Итерация сервиса в случае если сервис является циклическим.
-     * @param {...*} [args] Аргументы.
-     * @returns {Promise<void>} Промис без экстра данных.
+     * Iteration of the service if the service is cyclic.
+     * @param {...*} [args] Arguments.
+     * @returns {Promise<void>} Promise without extra data.
      */
     async iteration(...args) {
         throw 'Empty iteration body';
     }
 
     /**
-     * Запускает итератор сервиса.
-     * @param {number} [firstIterationTimeout] Отсрочка запуска первой итерации.
-     * @param {number} [interval] Интервал между запусками итераций.
+     * Starts the service iterator.
+     * @param {number} [firstIterationTimeout] Postponing the launch of the first iteration.
+     * @param {number} [interval] The interval between iteration runs.
      */
     startLoop(firstIterationTimeout = 0, interval = Infinity) {
         setTimeout(async () => {
@@ -219,20 +219,20 @@ class Basic {
     }
 
     /**
-     * Останавливает итератор, при этом если какая-то итерация находится
-     * в процессе выполнения - она продолжит выполнение, но новые итерации
-     * запущенны не будут.
+     * Stops the iterator, while if some iteration is
+     * in progress - it will continue execution, but new iterations
+     * will not be started.
      */
     stopLoop() {
         clearInterval(this._loopId);
     }
 
     /**
-     * Распечатывает конфигурацию микросервиса, устанавливаемую через
-     * ENV-переменые. Конфигурация корневых классов будет распечатана
-     * автоматически, для распечатки конфигурации самого микросервиса
-     * необходимо передать объект env-модуля в параметры метода.
-     * @param {Object} [serviceEnv] Модуль конфигурации уровня микросервиса.
+     * Prints the microservice configuration installed via
+     * ENV variables. The configuration of the root classes will be printed out
+     * automatically, to print out the configuration of the microservice itself
+     * it is necessary to pass the env module object to the method parameters.
+     * @param {Object} [serviceEnv] Microservice level configuration module.
      */
     printEnvBasedConfig(serviceEnv = {}) {
         Logger.info('ENV-based config:');
@@ -255,31 +255,31 @@ class Basic {
     }
 
     /**
-     * Эмиттер событий сервиса, необходим для подписки на события.
-     * Возвращаемый инстранс эмиттера является стандартным
-     * эмиттером NodeJS.
-     * @returns {EventEmitter} Эмиттер событий сервиса.
+     * Service event emitter, required to subscribe to events.
+     * The returned emitter instrance is standard
+     * NodeJS emitter.
+     * @returns {EventEmitter} Service event emitter.
      */
     getEmitter() {
         return this._emitter;
     }
 
     /**
-     * Шоткат для запуска эвента.
-     * Запускает эвент с указанным именем.
-     * Данные, при необходимости, можно передать аргментами
-     * через запятую.
-     * @param {string/Symbol} name Имя события.
-     * @param {...*} [data] Данные.
+     * A shortcut to launch the event.
+     * Launches an event with the specified name.
+     * Data, if necessary, can be transmitted in fragments
+     * separated by commas.
+     * @param {string/Symbol} name The name of the event.
+     * @param {...*} [data] Data.
      */
     emit(name, ...data) {
         this._emitter.emit(name, ...data);
     }
 
     /**
-     * Трансляция эвентов целевого объекта через себя.
-     * @param {Object/Object[]} from Эмиттер, эвенты которого необходимо транслировать.
-     * @param {...string/string/string[]} events Список эвентов.
+     * Broadcasting the events of the target object through itself.
+     * @param {Object/Object[]} from The emitter whose events need to be broadcast.
+     * @param {...string/string/string[]} events List of events.
      */
     translateEmit(from, ...events) {
         if (!Array.isArray(from)) {
@@ -298,19 +298,19 @@ class Basic {
     }
 
     /**
-     * Подписка на эвент с указанным именем.
-     * @param {string/Symbol} name Имя эвента.
-     * @param {Function} callback Колбек.
+     * Subscribing to an event with the specified name.
+     * @param {string/Symbol} name Event name.
+     * @param {Function} callback Callback.
      */
     on(name, callback) {
         this._emitter.on(name, callback);
     }
 
     /**
-     * Подписка на эвент с указанным именем.
-     * Исполняется один раз.
-     * @param {string/Symbol} name Имя эвента.
-     * @param {Function} callback Колбек.
+     * Subscribing to an event with the specified name.
+     * Executed once.
+     * @param {string/Symbol} name Event name.
+     * @param {Function} callback Callback.
      */
     once(name, callback) {
         this._emitter.once(name, callback);

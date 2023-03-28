@@ -1,4 +1,4 @@
-// Описание переменных окружения смотри в Readme.
+// For a description of the environment variables, see the Readme.
 const env = process.env;
 
 module.exports = {

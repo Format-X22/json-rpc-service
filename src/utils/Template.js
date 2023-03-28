@@ -1,30 +1,30 @@
 const template = require('lodash.template');
 
 /**
- * Класс работы с шаблонами.
- * Использует lodash.template для генерации шаблонов.
+ * Class of working with templates.
+ * Uses Lodash.template to generate templates.
  */
 class Template {
     /**
-     * Создает объект шаблона из строки.
-     * Результат можно вызвать ещё раз передав параметры
-     * для подстановки. Детально можно посмотреть в
-     * документации Lodash для метода template.
-     * @param {string} string Строка-шаблон.
-     * @returns {Function} Шаблон-функция.
+     * Creates a template object from a string.
+     * The result can be called again by passing parameters
+     * for substitution. You can see details in the
+     * Lodash documentation for the template method.
+     * @param {string} string String-template.
+     * @returns {Function} The template is a function.
      */
     static make(string) {
         return template(string);
     }
 
     /**
-     * Аналог метода make, но создает шаблоны для
-     * строк внутри объекта, обходя его рекурсивно,
-     * заменяя оригинальные строки на шаблоны-функции.
-     * Предполагается что вложенные объекты являются объектами
-     * или поддерживают Object.keys(inner).
-     * @param {Object} object Целевой объект.
-     * @returns {Object} object Целевой объект.
+     * Analogous to the make method, but creates templates for
+     * rows inside an object, traversing it recursively,
+     * replacing the original strings with function templates.
+     * It is assumed that nested objects are objects
+     * or support Object.keys(inner).
+     * @param {Object} object Target object.
+     * @returns {Object} object Target object.
      */
     static makeFor(object) {
         for (let key of Object.keys(object)) {

@@ -2,13 +2,13 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Набор различных методов для работы с .env-файлом и переменными окружения.
+ * A set of different methods for working with .ini file and environment variables.
  */
 class Env {
     /**
-     * Извлечь переменные окружения из файла.
-     * @param [envPath] Не стандартный путь до файла.
-     * @return {Map<string, string>} Набор переменных окружения.
+     * Extract environment variables from a file.
+     * @param [envPath] Not the standard path to the file.
+     * @return {Map<string, string>} A set of environment variables.
      */
     static extractFromFile(envPath = path.resolve(process.cwd(), '.env')) {
         const rawEnvs = fs.readFileSync(envPath, { encoding: 'utf-8' });

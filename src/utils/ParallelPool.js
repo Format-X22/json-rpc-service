@@ -1,11 +1,11 @@
 /**
- * Помощник для ассинхронных вызовов с ограниченим одновременных вызовов.
+ * An assistant for asynchronous calls with a limitation of simultaneous calls.
  */
 class ParallelPool {
     /**
-     * Создает очередь паралельных вызовов с ограничением количества одновременных обработок.
-     * @param {function} handler - обработчик очереди
-     * @param {number} parallelCount - число паралельных обработчиков
+     * Creates a queue of parallel calls with a limit on the number of simultaneous processing.
+     * @param {function} handler - queue handler
+     * @param {number} parallelCount - number of parallel handlers
      */
     constructor({ handler, parallelCount = 10 } = {}) {
         if (!handler) {
@@ -21,8 +21,8 @@ class ParallelPool {
     }
 
     /**
-     * Добавить вызов в очередь выполнения,
-     * возвращает результирующие значение из обоботчика обернутое в Promise
+     * Add a call to the execution queue,
+     * returns the resulting value from the handler wrapped in Promise
      * @param args
      * @returns {Promise<*>}
      */
@@ -46,8 +46,8 @@ class ParallelPool {
     }
 
     /**
-     * Добавить в очередь выполнения вызовы для обработчика,
-     * возвращает массив результирующих значений обернутые в Promise.
+     * Add handler calls to the execution queue,
+     * returns an array of resulting values wrapped in Promise.
      * @param {Array} list
      * @returns {Promise<[]>}
      */
@@ -56,16 +56,16 @@ class ParallelPool {
     }
 
     /**
-     * Получить длину очереди исполнения, включая
-     * те функции что уже запущены, но ещё не завершились
-     * @return {number} Число функций.
+     * Get the length of the execution queue, including
+     * those functions that have already been started, but have not yet been completed
+     * @return {number} Number of functions.
      */
     getQueueLength() {
         return this._currentPromises.size + this._queue.length;
     }
 
     /**
-     * Дождаться завершения всех вызовов (текущих и в очереди)
+     * Wait for all calls (current and queued) to finish
      */
     async flush() {
         await Promise.all(

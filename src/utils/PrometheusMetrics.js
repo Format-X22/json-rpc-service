@@ -6,9 +6,9 @@ const Logger = require('../utils/Logger');
 let createdAlready = false;
 
 /**
- * Класс предоставляет сервер метрик Prometheus.
- * Класс является синглтоном и пропускает попытку
- * создания ещё одного экземпляра, возвращая существующий.
+ * The class provides the Prometheus metrics server.
+ * The class is a singleton and skips the attempt
+ * creating another instance by returning an existing one.
  */
 class PrometheusMetrics {
     constructor() {
@@ -33,7 +33,7 @@ class PrometheusMetrics {
 
         this._server.listen(env.JRS_METRICS_PORT, env.JRS_METRICS_HOST, err => {
             if (err) {
-                // Ошибка при поднятии метрик не должна рушить приложение, просто логируем.
+                // An error when raising metrics should not ruin the application, just log in.
                 Logger.warn('PrometheusMetrics server start failed:', err);
             }
         });
@@ -44,7 +44,7 @@ class PrometheusMetrics {
     }
 
     /**
-     * Увеличить счетчик.
+     * Increase the counter.
      * @param {string} metricName
      * @param {number} [count=1]
      * @param {Object} [labels]
@@ -73,8 +73,8 @@ class PrometheusMetrics {
     }
 
     /**
-     * Установить значение метрики.
-     * (в графиках будет отображено всегда последнее выставленное значение без агрегации)
+     * Set the metric value.
+     * (the charts will always display the last set value without aggregation)
      * @param {string} metricName
      * @param {number} value
      * @param {Object} [labels]
@@ -98,7 +98,7 @@ class PrometheusMetrics {
     }
 
     /**
-     * Записать время.
+     * Record the time.
      * @param {string} metricName
      * @param {number} time
      * @param {Object} [labels]
@@ -122,7 +122,7 @@ class PrometheusMetrics {
     }
 
     /**
-     * Начать замер времени, возвращает функцию которую надо вызвать в конце замера.
+     * Start time measurement, returns the function to be called at the end of the measurement.
      * @param {string} metricName
      * @param {Object} [labels]
      * @returns {Function}

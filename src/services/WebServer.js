@@ -5,20 +5,20 @@ const BasicService = require('./Basic');
 const Logger = require('../utils/Logger');
 
 /**
- * Обертка над ExpressJS.
- * Сразу добавляет парсинг body для форм и JSON.
- * Также позволяет сразу задать папку со статическими файлами
- * и выдать коннектор (класс Connector) по апи.
+ * Wrapper over ExpressJS.
+ * Immediately adds body parsing for forms and JSON.
+ * Also allows you to immediately set a folder with static files
+ * and issue a connector (Connector class) by IP.
  */
 class WebServer extends BasicService {
     /**
-     * @param [staticDir] Папка для статических файлов.
-     * @param [connector] Инстанс коннектора.
-     * @param [connectorPath] Путь монтирования коннектора.
-     * @param [host] Хост.
-     * @param [port] Порт.
-     * @param [socket] Unix-socket вместо host/port.
-     * @param [bodySizeLimit] Максимальный размер тела запроса.
+     * @param [static Dir] Folder for static files.
+     * @param [connector] Connector instance.
+     * @param [connector Path] The connector mounting path.
+     * @param [host] Host.
+     * @param [port] Port.
+     * @param [socket] Unix-socket instead of host/port.
+     * @param [bodySizeLimit] The maximum size of the request body.
      */
     constructor({
         staticDir = env.JRS_SERVER_STATIC_DIR,
@@ -49,7 +49,7 @@ class WebServer extends BasicService {
 
     /**
      * Express app.
-     * @return {app} Инстанс app.
+     * @return {app} The app instance.
      */
     get app() {
         return this._app;

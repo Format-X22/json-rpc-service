@@ -4,20 +4,20 @@ const Logger = require('../utils/Logger');
 const Metrics = require('../utils/PrometheusMetrics');
 
 /**
- * Базовый класс главного класса приложения.
- * Автоматически выполняет стандартные процедуры
- * запуска и остановки микросервиса, полученные
- * опытным путем на других микросервисах и ботах,
- * что убирает ненужный повторяющийся код.
- * Необходимо лишь описать конструктор, поместив
- * необходимые сервисы в nested-хранлище
- * (смотри addNested). Единственным нюансом
- * является необходимость отправки в конструктор
- * этого базового класса клиента StatsD.
- * Дополнительно можно отправить env-объект для
- * автоматической печати переменных env в консоль.
- * Метод boot запускается автоматически на старте,
- * перед запуском вложенных сервисаов.
+ * Base class of the main application class.
+ * Automatically performs standard procedures
+ * start and stop of the microservice received
+ * experimentally on other microservices and bots,
+ * which removes unnecessary repetitive code.
+ * It is only necessary to describe the constructor by placing
+ * required services in the nested storage
+ * (see addNested). The only nuance
+ * is the need to send to the constructor
+ * of this StatsD client base class.
+ * Additionally, you can send an env object for
+ * automatic printing of env variables to the console.
+ * The boot method starts automatically at the start,
+ * before launching nested services.
  */
 class BasicMain extends Basic {
     constructor(env = null) {
@@ -53,12 +53,12 @@ class BasicMain extends Basic {
     }
 
     /**
-     * Подключит и запустит сервис работы
-     * с базой данных MongoDB до запуска метода boot.
-     * Сразу сохраняет инстанс сервиса MongoDB внутри класса.
-     * @param {string/null} [forceConnectString] Строка подключения,
-     * не обязательна.
-     * @param {Object} [options] Настройки подключения.
+     * Will connect and start the work service
+     * with the MongoDB database before running the boot method.
+     * Immediately saves the MongoDB service instance inside the class.
+     * @param {string/null} [forceConnectString] Connection string,
+     * optional.
+     * @param {Object} [options] Connection settings.
      */
     startMongoBeforeBoot(forceConnectString, options) {
         this._mongoDb = new MongoDB();
@@ -68,9 +68,9 @@ class BasicMain extends Basic {
     }
 
     /**
-     * Получить инстанс сервиса MongoDB, если он есть.
-     * Инстанс будет не запущенным до старта этого сервиса.
-     * @return {MongoDB/null} Инстанс.
+     * Get an instance of the MongoDB service, if there is one.
+     * The instance will not be started before the start of this service.
+     * @return {MongoDB/null} Instance.
      */
     getMongoDbInstance() {
         return this._mongoDb || null;

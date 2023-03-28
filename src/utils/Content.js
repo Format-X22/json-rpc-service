@@ -1,18 +1,18 @@
 const sanitizer = require('sanitize-html');
 
 /**
- * Утилита работы с контентом.
+ * A utility for working with content.
  */
 class Content {
     /**
-     * Жестко очищает строку от всех тегов и скриптов.
-     * При необходимости можно указать разрешенные теги и атрибуты.
-     * @param {string} string Изначальная строка.
-     * @param {string[]} [allowedTags] Разрешенные теги.
+     * Rigidly clears the string from all tags and scripts.
+     * If necessary, you can specify allowed tags and attributes.
+     * @param {string} string The original string.
+     * @param {string[]} [allowedTags] Allowed tags.
      * @param {object} [allowedAttributes]
-     * Разрешенные атрибуты в виде объекта где
-     * ключ объекта как имя тега, значение - массив рзрешенных атрибутов.
-     * @return {string} Очищенная строка.
+     * Allowed attributes in the form of an object where
+     * the key of the object as the tag name, the value is an array of allowed attributes.
+     * @return {string} The cleared string.
      */
     sanitize(string, allowedTags = [], allowedAttributes = {}) {
         if (!string) {

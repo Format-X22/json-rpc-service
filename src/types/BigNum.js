@@ -1,17 +1,17 @@
 const BigNumber = require('bignumber.js');
 
 /**
- * Обертка над библиотекой bignumber.js, доступные
- * методы необходимо смотреть в соответствующей документации.
- * Переопределены только необходимые для переопределения методы.
+ * Wrapper over the library bignumber.js , available
+ * methods should be viewed in the relevant documentation.
+ * Only the methods necessary for redefinition have been redefined.
  *
- * В отличии от оригинала использует более гибкий
- * конструктор и вызовы арифметических методов,
- * позволяя передавать не поддерживаемые в оригинале
- * числоподобные значения, например содержащие постфикс
- * вида '1000 coin'. Использование parseFloat искажает
- * оригинальное значение для очень больних чисел,
- * но эта обертка позволяет работать с ними без потерь.
+ * Unlike the original, it uses a more flexible
+ * constructor and calls to arithmetic methods,
+ * allowing you to pass not supported in the original
+ * number of similar values, for example containing a postfix
+ * of the type '1000 coin'. Using parseFloat distorts
+ * original value for very large numbers,
+ * but this wrapper allows you to work with them without loss.
  */
 class BigNum extends BigNumber {
     static clone(config) {
@@ -46,10 +46,10 @@ class BigNum extends BigNumber {
     }
 
     /**
-     * Конструктор, возвращающий прокси над bignumber.js.
-     * @param {number|string|BigInt|BigNumber} value Любое числоподобное
-     * значение, включая значения с префиксами и постфиксами.
-     * @param {number} [base] Система счисления (от 2 до 36).
+     * Constructor that returns the proxy nat bignumber.js .
+     * @param {number|string|BigInt|BigNumber} value Any number like
+     * value, including values with prefixes and postfixes.
+     * @param {number} [base] The number system (from 2 to 36).
      */
     constructor(value, base) {
         super(); // create context only

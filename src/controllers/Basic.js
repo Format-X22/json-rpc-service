@@ -1,21 +1,21 @@
 const Logger = require('../utils/Logger');
 
 /**
- * Базовый класс для контроллеров.
- * Предоставляет общую логику для контроллеров приложения.
- * Поддерживает базовый интерфейс контроллеров.
- * Конструктор может опционально принимать коннектор,
- * который позволяет использовать шот-кат метод sendTo,
- * проксируя вызов через себя, который позволяет общаться
- * с другими микросервисами.
+ * Base class for controllers.
+ * Provides common logic for application controllers.
+ * Supports the basic interface of controllers.
+ * The constructor can optionally accept a connector,
+ * which allows you to use the sendTo shot-cut method,
+ * proxying the call through itself, which allows you to communicate
+ * with other microservices.
  */
 class Basic {
     /**
-     * Конструктор
-     * @param {Object} [options] Настройки контроллера.
-     * @param {Object} [options.connector] Произвольный инстанс класса коннектора,
-     * предполагается что это Connector для общения между микросервисами,
-     * но им может быть и любой другой класс, имплементирующий схожий интерфейс.
+     * Constructor
+     * @param {Object} [options] Controller settings.
+     * @param {Object} [options.connector] An arbitrary instance of the connector class,
+     * it is assumed that this is a Connector for communication between microservices,
+     * but it can be any other class that implements a similar interface.
      */
     constructor({ connector } = {}) {
         if (connector) {
@@ -24,11 +24,11 @@ class Basic {
     }
 
     /**
-     * @property {Object} connector Создается конструктором, смотри описание.
+     * @property {Object} connector is created by the constructor, see the description.
      */
 
     /**
-     * Базовый метод любого контроллера, являющийся дефолтной входной точкой.
+     * The base method of any controller, which is the default input point.
      * @returns {Promise<void>}
      */
     async handle() {
@@ -36,12 +36,12 @@ class Basic {
     }
 
     /**
-     * Шот-кат метод для работы с коннектором, в базовом представлении
-     * отправляет сообщение другому микросервису, но по своей сути
-     * просто вызывает аналогичный метод у коннектора из конструктора,
-     * при его наличии.
-     * @param args Произвольные аргументы.
-     * @returns {Promise<*>} Ответ.
+     * Shotcat method for working with the connector, in the basic view
+     * sends a message to another microservice, but in essence
+     * simply calls a similar method from the connector from the constructor,
+     * if available.
+     * @param args Arbitrary arguments.
+     * @returns {Promise<*>} Answer.
      */
     async sendTo(...args) {
         if (this.connector) {
@@ -54,13 +54,13 @@ class Basic {
     }
 
     /**
-     * Шот-кат метод для работы с коннектором, в базовом представлении
-     * отправляет сообщение другому микросервису, но по своей сути
-     * просто вызывает аналогичный метод у коннектора.
-     * @param {string} service Имя-алиас микросервиса.
-     * @param {string} method Метод JSON-RPC.
-     * @param {Object} params Параметры запроса.
-     * @returns {Promise<*>} Ответ.
+     * Shotcat method for working with the connector, in the basic view
+     * sends a message to another microservice, but in essence
+     * just calls a similar method from the connector.
+     * @param {string} service Name is the alias of the microservice.
+     * @param {string} method JSON-RPC method.
+     * @param {Object} params Request parameters.
+     * @returns {Promise<*>} Answer.
      */
     async callService(service, method, params) {
         if (this.connector) {

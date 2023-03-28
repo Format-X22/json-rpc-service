@@ -5,9 +5,9 @@ const BasicService = require('./Basic');
 const Metrics = require('../utils/PrometheusMetrics');
 
 /**
- * Сервис взаимодействия с базой данных MongoDB.
- * Содержит методы для подключения к базе данных,
- * а также обертку для создания моделей формата Mongoose.Schema.
+ * MongoDB database interaction service.
+ * Contains methods for connecting to the database,
+ * as well as a wrapper for creating models of the Mongoose format.Schema.
  */
 class MongoDB extends BasicService {
     constructor(...args) {
@@ -17,23 +17,23 @@ class MongoDB extends BasicService {
     }
 
     /**
-     * Создание модели по объекту-конфигу.
-     * Дополнительно вторым аргументом можно указать конфиг,
-     * который будет применяться к уже готовой схеме,
-     * например составные индексы.
-     * О схемах детальнее описано в документации Mongoose.
-     * @param {string} name Имя модели.
-     * @param {Object} schemaConfig Схема-конфиг модели в виде простого объета.
-     * @param {Object} [optionsConfig] Конфиг настроек уровня схемы.
+     * Creating a model based on a configuration object.
+     * Additionally, the second argument can specify the config,
+     * which will be applied to a ready-made scheme,
+     * for example composite indexes.
+     * The schemas are described in more detail in the Mongoose documentation.
+     * @param {string} name The name of the model.
+     * @param {Object} schemaConfig Schema-config of the model as a simple object.
+     * @param {Object} [optionsConfig] Config of schema level settings.
      * @param {Array<Object,Object>} optionsConfig.index
-     * Массив конфигов индексов, состоящий из объектов с ключем fields
-     * для обозначения полей индекса и ключем options для дополнительных опций.
-     * Например {fields: {user: 1, data: 1}, options: {sparse: true}}
-     * опишет составной индекс с указанием пропуска значений с null.
-     * О схемах детальнее описано в документации Mongoose.
-     * @param {Object} optionsConfig.schema Дополнительные общие настройки
-     * для Mongoose схемы.
-     * @returns Модель.
+     * Array of index configs consisting of objects with the fields key
+     * to indicate the index fields and the options key for additional options.
+     * For example {fields: {user: 1, data: 1}, options: {sparse: true}}
+     * describes a composite index indicating the omission of null values.
+     * The schemas are described in more detail in the Mongoose documentation.
+     * @param {Object} optionsConfig.schema Additional general settings
+     * for Mongoose schema.
+     * @returns Model.
      */
     static makeModel(name, schemaConfig, optionsConfig = {}) {
         const schema = new mongoose.Schema(
@@ -51,38 +51,38 @@ class MongoDB extends BasicService {
     }
 
     /**
-     * Получение объекта драйвера, который используется в данном классе.
-     * Необходимо для выполнения операций непосредственно с голым драйвером mongoose
-     * @returns Модуль.
+     * Getting the driver object that is used in this class.
+     * Required to perform operations directly with the bare mongoose driver
+     * @returns Module.
      */
     static get mongoose() {
         return mongoose;
     }
 
     /**
-     * Получение типов схем, необходимо для обозначения особых
-     * типов полей для моделей.
-     * @returns Типы схем.
+     * Getting the types of schemes needed to denote special
+     * types of fields for models.
+     * @returns Schema types.
      */
     static get schemaTypes() {
         return mongoose.Schema.Types;
     }
 
     /**
-     * Получение коллекции конструкторов типов данных MongoDB.
-     * @returns Типы схем.
+     * Getting a collection of MongoDB data type constructors.
+     * @returns Schema types.
      */
     static get mongoTypes() {
         return mongoose.Types;
     }
 
     /**
-     * Запуск, подключение к базе даннх на основе переменных
-     * окружения, либо по явно указанной строке подключеня.
-     * @param {string/null} [forceConnectString] Строка подключения,
-     * не обязательна.
-     * @param {Object} [options] Настройки подключения к базе.
-     * @returns {Promise<*>} Промис без экстра данных.
+     * Start, connect to a database based on variables
+     * environment, or by an explicitly specified connection string.
+     * @param {string/null} [forceConnectString] Connection String,
+     * not necessarily.
+     * @param {Object} [options] Database connection settings.
+     * @returns {Promise<*>} Promise without extra data.
      */
     async start(forceConnectString = null, options = {}) {
         return new Promise(resolve => {
@@ -106,8 +106,8 @@ class MongoDB extends BasicService {
     }
 
     /**
-     * Остановка, отключение от базы данных.
-     * @returns {Promise<void>} Промис без экстра данных.
+     * Stop, disconnect from the database.
+     * @returns {Promise<void>} Promise without extra data.
      */
     async stop() {
         await mongoose.disconnect();

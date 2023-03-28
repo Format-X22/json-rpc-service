@@ -2,28 +2,28 @@ require('colors');
 const moment = require('moment');
 
 /**
- * Логгер действий.
- * Выводит дату с секундами, PID процесса и маркер вида лога в цвете.
+ * Action logger.
+ * Displays the date with seconds, the PID of the process and the marker of the log type in color.
  */
 class Logger {
     static metrics = null;
 
     /**
-     * Залогировать обычное действие.
+     * Log normal action
      */
     static log(...args) {
         this._log('[log]', args, 'grey');
     }
 
     /**
-     * Залогировать важное действие.
+     * Log important action
      */
     static info(...args) {
         this._log('[info]', args, 'blue');
     }
 
     /**
-     * Залогировать некритичную ошибку-уведомление.
+     * Log warning
      */
     static warn(...args) {
         this._log('[warn]', args, 'yellow');
@@ -34,7 +34,7 @@ class Logger {
     }
 
     /**
-     * Залогировать ошибку.
+     * Log error
      */
     static error(...args) {
         this._log('[error]', args, 'red');

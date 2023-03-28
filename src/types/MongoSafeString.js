@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 const Content = require('../utils/Content');
 
 /**
- * Добавляет санитайзер для строк в MongoDB.
- * Подключение типа происходит автоматически при подключении этого файла.
+ * Adds a sanitizer for strings in MongoDB.
+ * Type connection occurs automatically when this file is connected.
  */
 class MongoSafeString extends mongoose.SchemaType {
     cast(value) {

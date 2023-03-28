@@ -1,22 +1,22 @@
 const Logger = require('./Logger');
 
 /**
- * Утилита для работы с асинхронными параллельными вычислениями.
+ * Utility for working with asynchronous parallel computing.
  */
 class Parallel {
     /**
-     * Создаёт буфер вызова на основе переданной функции-колбека.
-     * Буфер можно вызывать как функцию сколько угодно раз, на каждый раз
-     * будет асинхронно вызвана функция-колбек, но следующий вызов
-     * будет дожидаться завершения предыдущих, что гарантирует
-     * последовательность исполнения функций друг за другом по факту
-     * завершения предыдущей, вне зависимости от времени появления
-     * следующего вызова или времени исполнения функции-колбека.
-     * Буфер не возвращает результат исполнения функции-колбека,
-     * для получения результатов вычислений необходимо обрабатывать
-     * их в самой функции-колбеке.
-     * @param {Function} callback Функция-колбек.
-     * @return {Function} Буфер вызова.
+     * Creates a call buffer based on the passed callback function.
+     * The buffer can be called as a function any number of times, for each time
+     * the callback function will be called asynchronously, but the next call
+     * will wait for the completion of the previous ones, which guarantees
+     * the sequence of execution of functions one after the other upon
+     * completion of the previous one, regardless of the time of appearance
+     * the next call or execution time of the callback function.
+     * The buffer does not return the result of the callback function execution,
+     * to obtain the results of calculations, it is necessary to process
+     * they are in the callback function itself.
+     * @param {Function} callback The callback function.
+     * @return {Function} Call buffer.
      */
     consequentially(callback) {
         const state = {

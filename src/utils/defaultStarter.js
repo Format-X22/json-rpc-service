@@ -1,11 +1,11 @@
 const Logger = require('../utils/Logger');
 
 /**
- * Функция, выполняющая дефолтный запуск микросервиса,
- * достаточно лишь передать главный класс приложения.
- * Существует по причине полной аналогии способа запуска
- * все нынешних микросервисов на базе core.
- * @param {Basic} Main Главный класс приложения.
+ * A function that performs the default launch of a microservice,
+ * it is enough just to pass the main class of the application.
+ * Exists because of the complete analogy of the launch method
+ * all current core-based microservices.
+ * @param {Basic} Main The main class of the application.
  */
 module.exports = Main => {
     new Main().start().then(

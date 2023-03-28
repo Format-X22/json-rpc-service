@@ -2,14 +2,14 @@ const jayson = require('jayson');
 const Env = require('../utils/Env');
 
 /**
- * Класс-помощник, удобный для использования в тестах типовых микросервисов.
+ * The class is an assistant, convenient for use in tests of typical microservices.
  */
 class RpcApiHelper {
     /**
-     * @param [apiMountPath] Точка монтирования
-     * @param [apiPort] Порт подключения
-     * @param [extractApiFromEnv] Автоматически подтянуть точку монтирования и порт из .env файла
-     * @param [envPath] Указать не стандартный путь до .env файла
+     * @param [apiMountPath] Mount point
+     * @param [apiPort] Connection port
+     * @param [extractApiFromEnv] Automatically pull up the mount point and port from the .env file
+     * @param [envPath] Specify a non-standard path to the .env file
      */
     constructor({ apiMountPath = '/', apiPort = 3000, extractApiFromEnv = false, envPath = null }) {
         if (extractApiFromEnv) {
@@ -30,11 +30,11 @@ class RpcApiHelper {
     }
 
     /**
-     * Вызвать JSON-PRC API.
-     * @param method RPC-Метод.
-     * @param data Передаваемые данные.
-     * @param throwOnErrorCode Нужно ли вызывать ошибку на ответе с rpc-error секцией.
-     * @return {Promise<Object>} Объект с полным RPC-ответом сервера.
+     * Call the JSON-RPC API.
+     * @param method RPC Method.
+     * @param data Transmitted data.
+     * @param throwOnErrorCode Whether to cause an error on the response with the rpc-error section.
+     * @return {Promise<Object>} An object with a complete server RPC response.
      */
     callApi(method, data, throwOnErrorCode = true) {
         return new Promise((resolve, reject) => {

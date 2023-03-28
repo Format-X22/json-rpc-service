@@ -1,83 +1,83 @@
 # JSON-RPC-SERVICE
 
-**JSON-RPC-SERVICE** является микро-фреймворком для создания сервисов с JSON-RPC API.
-Сервисы могут обмениваться друг с другом сообщениями, играя роль микро-сервисов.
+**JSON-RPC-SERVICE** is a micro-framework for creating services with the JSON-RPC API.
+Services can exchange messages with each other, playing the role of microservices.
 
-Используется в таких блокчейн проектах как:
+It is used in such blockchain projects as:
 
 -   Golos http://golos.io
 -   CyberWay http://cyberway.io
 -   BankEx http://bankex.com
 -   TNC Group https://tncitgroup.com
 
-И не в блокчейн проектах:
+And not in blockchain projects:
 
 -   TROOVE http://troove.ru
 
 ---
 
-**Основные возможности:**
+**Main features:**
 
--   Простое построение JSON-RPC API с валидацией параметров библиотекой `Ajv`.
--   Простое создание моделей для базы данных на основе `Mongoose` (MongoDB).
--   Базовые классы для контроллеров и сервисов.
--   `Prometheus` мониторинг.
--   Набор разнообразных утилит.
+-   Simple construction of the JSON-RPC API with parameter validation by the `Ajv` library.
+-   Easy creation of models for a database based on `Mongoose` (MongoDB).
+-   Base classes for controllers and services.
+-   `Prometheus' monitoring.
+-   A set of various utilities.
 
 ---
 
-**Использование:**
+**Usage:**
 
-Просто подключить нужный класс или сразу все классы через `index.js`
+Just connect the desired class or all classes at once via `index.js `
 
-Также можно указать переменные окружения:
+You can also specify environment variables:
 
--   `JRS_CONNECTOR_HOST` - адрес, который будет использован для входящих подключений.  
-    Дефолтное значение - `0.0.0.0`
+-   `JRS_CONNECTOR_HOST` - the address that will be used for incoming connections.  
+    Default value - `0.0.0.0`
 
--   `JRS_CONNECTOR_PORT` - адрес порта, который будет использован для входящих подключений.  
-    Дефолтное значение - `3000`
+-   `JRS_CONNECTOR_PORT` - the address of the port that will be used for incoming connections.  
+    Default value- `3000`
 
--   `JRS_CONNECTOR_SOCKET` - адрес сокета, который будет использован для входящих подключений.  
-    Если указан - заменяет подключение через хост/порт.
+-   `JRS_CONNECTOR_SOCKET` - the address of the socket that will be used for incoming connections.  
+    If specified, it replaces the connection via the host/port.
 
--   `JRS_METRICS_HOST` - адрес хоста для метрик Prometheus.  
-    Дефолтное значение - `127.0.0.1`
+-   `JRS_METRICS_HOST` - the host address for Prometheus metrics. 
+    Default value - `127.0.0.1`
 
--   `JRS_METRICS_PORT` - адрес порта для метрик Prometheus.  
-    Дефолтное значение - `9777`
+-   `JRS_METRICS_PORT` - port address for Prometheus metrics.
+    Default value - `9777`
 
--   `JRS_MONGO_CONNECT` - строка подключения к базе MongoDB.  
-    Дефолтное значение - `mongodb://mongo/admin`
+-   `JRS_MONGO_CONNECT` - connection string to the MongoDB database.
+    Default value - `mongodb://mongo/admin`
 
--   `JRS_SYSTEM_METRICS` - включает логирование системных показателей системы для Prometheus.  
-    Дефолтное значение - `false`
+-   `JRS_SYSTEM_METRICS` - enables logging of system metrics for Prometheus.  
+    Default value - `false`
 
--   `JRS_EXTERNAL_CALLS_METRICS` - включает метрики не только по входящим, но и по исходящим запросами сервиса.  
-    Дефолтное значение - `false`
+-   `JRS_EXTERNAL_CALLS_METRICS` - includes metrics not only for incoming, but also for outgoing service requests.  
+    Default value - `false`
 
--   `JRS_METRICS_TO_LOG` - дублирует все метрики в логи.  
-    Дефолтное значение - `false`
+-   `JRS_METRICS_TO_LOG` - duplicates all metrics in logs.  
+    Default value - `false`
 
--   `JRS_SERVER_STATIC_DIR` - в случае использования веб сервера можно указать папку для раздачи статичных файлов.  
-    Дефолтное значение - `null` _(папка отсутствует)_
+-   `JRS_SERVER_STATIC_DIR` - if you use a web server, you can specify a folder for distributing static files.  
+    Default value - `null` _(folder is missing)_
 
--   `JRS_SERVER_CONNECTOR_PATH` - в случае использования веб сервера можно указать путь по которому будет доступен коннектор.  
-    Дефолтное значение - `/` _(корневой запрос)_
+-   `JRS_SERVER_CONNECTOR_PATH` - in the case of using a web server, you can specify the path by which the connector will be available.  
+    Default value - `/` _(root query)_
 
--   `JRS_SERVER_BODY_SIZE_LIMIT` - максимальный размер тела запроса для веб сервера.  
-    Дефолтное значение - `20mb`
+-   `JRS_SERVER_BODY_SIZE_LIMIT` - the maximum size of the request body for the web server.  
+    Default value - `20mb`
 
--   `JRS_CONNECTOR_ALIAS_NAME` - алиас-имя микросервиса, которым он представляется другим микросервисам,
-    например при внутреннем пинг-запросе  
-    Дефолтное значение - `anonymous`
+-   `JRS_CONNECTOR_ALIAS_NAME` - alias is the name of the microservice by which it is presented to other microservices,
+    for example, with an internal ping request 
+    Default value - `anonymous`
 
--   `JRS_POSTGRES_USERNAME` - имя пользователя при подключении к Postgres базе данных.
+-   `JRS_POSTGRES_USERNAME` - the username when connecting to the Postgres database.
 
--   `JRS_POSTGRES_PASSWORD` - пароль при подключении к Postgres базе данных.
+-   `JRS_POSTGRES_PASSWORD` - password when connecting to the Postgres database.
 
--   `JRS_POSTGRES_HOST` - хост при подключении к Postgres базе данных.
+-   `JRS_POSTGRES_HOST` - host when connecting to the Postgres database.
 
--   `JRS_POSTGRES_PORT` - порт при подключении к Postgres базе данных.
+-   `JRS_POSTGRES_PORT` - port when connecting to the Postgres database.
 
--   `JRS_POSTGRES_DATABASE` - имя базы данных при подключении к Postgres базе данных.
+-   `JRS_POSTGRES_DATABASE` - the name of the database when connecting to the Postgres database.
