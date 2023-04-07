@@ -1,11 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.KeyGen = void 0;
 class KeyGen {
-    // Custom Base28 = A-Z + 0-9 - [0, O, I, L, C, S, Y, U]
     static makeBase28HumanReadableIdByMongoObjectId(mongoObjectId) {
         mongoObjectId = String(mongoObjectId);
-
         const int = parseInt(mongoObjectId.slice(-10), 16);
         const raw = int.toString(28).toUpperCase();
-
         return raw.replace(/0|O|I|L|C/g, char => {
             switch (char) {
                 case '0':
@@ -24,5 +24,5 @@ class KeyGen {
         });
     }
 }
-
-module.exports = KeyGen;
+exports.KeyGen = KeyGen;
+//# sourceMappingURL=KeyGen.js.map

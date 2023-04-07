@@ -1,5 +1,6 @@
-// Export public classes
-module.exports = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = {
     controllers: {
         Basic: require('./src/controllers/Basic'),
     },
@@ -33,3 +34,4 @@ module.exports = {
         env: require('./src/data/env'),
     },
 };
+//# sourceMappingURL=index.js.map

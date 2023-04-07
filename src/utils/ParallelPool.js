@@ -1,31 +1,17 @@
-/**
- * An assistant for asynchronous calls with a limitation of simultaneous calls.
- */
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ParallelPool = void 0;
 class ParallelPool {
-    /**
-     * Creates a queue of parallel calls with a limit on the number of simultaneous processing.
-     * @param {function} handler - queue handler
-     * @param {number} parallelCount - number of parallel handlers
-     */
-    constructor({ handler, parallelCount = 10 } = {}) {
+    constructor({ handler, parallelCount = 10, } = {}) {
         if (!handler) {
             throw new Error('Need pass handler');
         }
-
-        this._handler = handler;
-        this._parallelCount = parallelCount;
-
-        this._isChechking = false;
-        this._queue = [];
-        this._currentPromises = new Set();
+        this.handler = handler;
+        this.parallelCount = parallelCount;
+        this.isChecking = false;
+        this.queueVal = [];
+        this.currentPromises = new Set();
     }
-
-    /**
-     * Add a call to the execution queue,
-     * returns the resulting value from the handler wrapped in Promise
-     * @param args
-     * @returns {Promise<*>}
-     */
     queue(...args) {
         const itemInfo = {
             args,
@@ -33,80 +19,46 @@ class ParallelPool {
             resolve: null,
             reject: null,
         };
-
         itemInfo.promise = new Promise((resolve, reject) => {
             itemInfo.resolve = resolve;
             itemInfo.reject = reject;
         });
-
-        this._queue.push(itemInfo);
-        this._checkQueue();
-
+        this.queueVal.push(itemInfo);
+        this.checkQueue();
         return itemInfo.promise;
     }
-
-    /**
-     * Add handler calls to the execution queue,
-     * returns an array of resulting values wrapped in Promise.
-     * @param {Array} list
-     * @returns {Promise<[]>}
-     */
     queueList(list) {
         return Promise.all(list.map(arg => this.queue(arg)));
     }
-
-    /**
-     * Get the length of the execution queue, including
-     * those functions that have already been started, but have not yet been completed
-     * @return {number} Number of functions.
-     */
     getQueueLength() {
-        return this._currentPromises.size + this._queue.length;
+        return this.currentPromises.size + this.queue.length;
     }
-
-    /**
-     * Wait for all calls (current and queued) to finish
-     */
     async flush() {
-        await Promise.all(
-            [...this._currentPromises, ...this._queue.map(info => info.promise)].map(
-                promise => promise.catch(noop) // flush игнорирует ошибки
-            )
-        );
+        await Promise.all([...this.currentPromises, ...this.queueVal.map(info => info.promise)].map(promise => promise.catch(noop)));
     }
-
-    _checkQueue() {
-        if (this._queue.length === 0 || this._isChechking) {
+    checkQueue() {
+        if (this.queueVal.length === 0 || this.isChecking) {
             return;
         }
-
-        this._isChechking = true;
-
-        while (this._queue.length && this._currentPromises.size < this._parallelCount) {
-            // this._runNext must calling without await
-            this._runNext();
+        this.isChecking = true;
+        while (this.queueVal.length && this.currentPromises.size < this.parallelCount) {
+            this.runNext();
         }
-
-        this._isChechking = false;
+        this.isChecking = false;
     }
-
-    async _runNext() {
-        const { args, promise, resolve, reject } = this._queue.shift();
-
-        this._currentPromises.add(promise);
-
+    async runNext() {
+        const { args, promise, resolve, reject } = this.queueVal.shift();
+        this.currentPromises.add(promise);
         try {
-            resolve(await this._handler(...args));
-        } catch (err) {
+            resolve(await this.handler(...args));
+        }
+        catch (err) {
             reject(err);
         }
-
-        this._currentPromises.delete(promise);
-
-        this._checkQueue();
+        this.currentPromises.delete(promise);
+        this.checkQueue();
     }
 }
-
-function noop() {}
-
-module.exports = ParallelPool;
+exports.ParallelPool = ParallelPool;
+function noop() { }
+//# sourceMappingURL=ParallelPool.js.map

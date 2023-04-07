@@ -1,207 +1,143 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PrometheusMetrics = void 0;
 const express = require('express');
 const client = require('prom-client');
 const env = require('../data/env');
-const Logger = require('../utils/Logger');
-
+const Logger = require('./Logger');
 let createdAlready = false;
-
-/**
- * The class provides the Prometheus metrics server.
- * The class is a singleton and skips the attempt
- * creating another instance by returning an existing one.
- */
 class PrometheusMetrics {
     constructor() {
         if (createdAlready) {
-            return PrometheusMetrics._instance;
+            return PrometheusMetrics.instance;
         }
-
         if (env.JRS_SYSTEM_METRICS) {
             client.collectDefaultMetrics({ timeout: 5000 });
         }
-
-        this._counters = new Map();
-        this._gauges = new Map();
-        this._histograms = new Map();
-
-        this._server = express();
-
-        this._server.get('/metrics', (req, res) => {
+        this.counters = new Map();
+        this.gauges = new Map();
+        this.histograms = new Map();
+        this.server = express();
+        this.server.get('/metrics', (req, res) => {
             res.set('Content-Type', client.register.contentType);
             res.end(client.register.metrics());
         });
-
-        this._server.listen(env.JRS_METRICS_PORT, env.JRS_METRICS_HOST, err => {
+        this.server.listen(env.JRS_METRICS_PORT, env.JRS_METRICS_HOST, err => {
             if (err) {
-                // An error when raising metrics should not ruin the application, just log in.
                 Logger.warn('PrometheusMetrics server start failed:', err);
             }
         });
-
-        PrometheusMetrics._instance = this;
-
+        PrometheusMetrics.instance = this;
         createdAlready = true;
     }
-
-    /**
-     * Increase the counter.
-     * @param {string} metricName
-     * @param {number} [count=1]
-     * @param {Object} [labels]
-     */
     inc(metricName, count = 1, labels) {
         if (count && typeof count !== 'number') {
             labels = count;
             count = 1;
         }
-
-        const counter = this._getCounter(metricName, labels);
-
+        const counter = this.getCounter(metricName, labels);
         if (labels) {
             counter.inc(labels, count);
-
             if (env.JRS_METRICS_TO_LOG) {
                 Logger.log(`METRICS: Inc ${metricName}:${JSON.stringify(labels)} by ${count}`);
             }
-        } else {
+        }
+        else {
             counter.inc(count);
-
             if (env.JRS_METRICS_TO_LOG) {
                 Logger.log(`METRICS: Inc ${metricName} by ${count}`);
             }
         }
     }
-
-    /**
-     * Set the metric value.
-     * (the charts will always display the last set value without aggregation)
-     * @param {string} metricName
-     * @param {number} value
-     * @param {Object} [labels]
-     */
     set(metricName, value, labels) {
-        const gauge = this._getGauge(metricName, labels);
-
+        const gauge = this.getGauge(metricName, labels);
         if (labels) {
             gauge.set(labels, value);
-
             if (env.JRS_METRICS_TO_LOG) {
                 Logger.log(`METRICS: Set ${metricName}:${JSON.stringify(labels)} to ${value}`);
             }
-        } else {
+        }
+        else {
             gauge.set(value);
-
             if (env.JRS_METRICS_TO_LOG) {
                 Logger.log(`METRICS: Set ${metricName} to ${value}`);
             }
         }
     }
-
-    /**
-     * Record the time.
-     * @param {string} metricName
-     * @param {number} time
-     * @param {Object} [labels]
-     */
     recordTime(metricName, time, labels) {
-        const histogram = this._getHistogram(metricName, labels);
-
+        const histogram = this.getHistogram(metricName, labels);
         if (labels) {
             histogram.observe(labels, time);
-
             if (env.JRS_METRICS_TO_LOG) {
                 Logger.log(`METRICS: Observe ${metricName}:${JSON.stringify(labels)} at ${time}`);
             }
-        } else {
+        }
+        else {
             histogram.observe(time);
-
             if (env.JRS_METRICS_TO_LOG) {
                 Logger.log(`METRICS: Observe ${metricName} at ${time}`);
             }
         }
     }
-
-    /**
-     * Start time measurement, returns the function to be called at the end of the measurement.
-     * @param {string} metricName
-     * @param {Object} [labels]
-     * @returns {Function}
-     */
     startTimer(metricName, labels) {
         if (labels) {
             if (env.JRS_METRICS_TO_LOG) {
-                Logger.log(
-                    `METRICS: Start timer ${metricName}:${JSON.stringify(labels)} at ${new Date()}`
-                );
+                Logger.log(`METRICS: Start timer ${metricName}:${JSON.stringify(labels)} at ${new Date()}`);
             }
-        } else {
+        }
+        else {
             if (env.JRS_METRICS_TO_LOG) {
                 Logger.log(`METRICS: Start timer ${metricName} at ${new Date()}`);
             }
         }
-
-        return this._getHistogram(metricName, labels).startTimer(labels);
+        return this.getHistogram(metricName, labels).startTimer(labels);
     }
-
-    _getCounter(metricName, labels) {
-        let counter = this._counters.get(metricName);
-
+    getCounter(metricName, labels) {
+        let counter = this.counters.get(metricName);
         if (!counter) {
-            const labelNames = this._getLabelNames(labels);
-
+            const labelNames = this.getLabelNames(labels);
             counter = new client.Counter({
                 name: metricName,
                 help: 'no help',
                 labelNames,
             });
-            this._counters.set(metricName, counter);
+            this.counters.set(metricName, counter);
         }
-
         return counter;
     }
-
-    _getGauge(metricName, labels) {
-        let gauge = this._gauges.get(metricName);
-
+    getGauge(metricName, labels) {
+        let gauge = this.gauges.get(metricName);
         if (!gauge) {
-            const labelNames = this._getLabelNames(labels);
-
+            const labelNames = this.getLabelNames(labels);
             gauge = new client.Gauge({
                 name: metricName,
                 help: 'no help',
                 labelNames,
             });
-            this._gauges.set(metricName, gauge);
+            this.gauges.set(metricName, gauge);
         }
-
         return gauge;
     }
-
-    _getHistogram(metricName, labels) {
-        let histogram = this._histograms.get(metricName);
-
+    getHistogram(metricName, labels) {
+        let histogram = this.histograms.get(metricName);
         if (!histogram) {
-            const labelNames = this._getLabelNames(labels);
-
+            const labelNames = this.getLabelNames(labels);
             histogram = new client.Histogram({
                 name: metricName,
                 help: 'no help',
                 labelNames,
                 buckets: [0.2, 0.5, 1, 2, 4, 10],
             });
-            this._histograms.set(metricName, histogram);
+            this.histograms.set(metricName, histogram);
         }
-
         return histogram;
     }
-
-    _getLabelNames(labels) {
+    getLabelNames(labels) {
         if (!labels) {
             return [];
         }
-
         return Object.keys(labels).sort();
     }
 }
-
-module.exports = PrometheusMetrics;
+exports.PrometheusMetrics = PrometheusMetrics;
+//# sourceMappingURL=PrometheusMetrics.js.map

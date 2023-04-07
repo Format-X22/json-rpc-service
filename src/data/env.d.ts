@@ -1,0 +1,20 @@
+export declare const envs: {
+    JRS_MONGO_CONNECT: string;
+    JRS_METRICS_HOST: string;
+    JRS_METRICS_PORT: number;
+    JRS_CONNECTOR_HOST: string;
+    JRS_CONNECTOR_PORT: number;
+    JRS_CONNECTOR_SOCKET: string;
+    JRS_EXTERNAL_CALLS_METRICS: boolean;
+    JRS_SYSTEM_METRICS: boolean;
+    JRS_SERVER_STATIC_DIR: string;
+    JRS_SERVER_CONNECTOR_PATH: string;
+    JRS_SERVER_BODY_SIZE_LIMIT: string;
+    JRS_CONNECTOR_ALIAS_NAME: string;
+    JRS_METRICS_TO_LOG: boolean;
+    JRS_POSTGRES_USERNAME: string;
+    JRS_POSTGRES_PASSWORD: string;
+    JRS_POSTGRES_HOST: string;
+    JRS_POSTGRES_PORT: string;
+    JRS_POSTGRES_DATABASE: string;
+};

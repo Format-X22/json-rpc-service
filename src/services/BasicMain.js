@@ -1,109 +1,72 @@
-const Basic = require('./Basic');
-const MongoDB = require('../services/MongoDB');
-const Logger = require('../utils/Logger');
-const Metrics = require('../utils/PrometheusMetrics');
-
-/**
- * Base class of the main application class.
- * Automatically performs standard procedures
- * start and stop of the microservice received
- * experimentally on other microservices and bots,
- * which removes unnecessary repetitive code.
- * It is only necessary to describe the constructor by placing
- * required services in the nested storage
- * (see addNested). The only nuance
- * is the need to send to the constructor
- * of this StatsD client base class.
- * Additionally, you can send an env object for
- * automatic printing of env variables to the console.
- * The boot method starts automatically at the start,
- * before launching nested services.
- */
-class BasicMain extends Basic {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BasicMain = void 0;
+const Basic_1 = require("./Basic");
+const PrometheusMetrics_1 = require("../utils/PrometheusMetrics");
+const MongoDB_1 = require("./MongoDB");
+const Logger_1 = require("../utils/Logger");
+class BasicMain extends Basic_1.Basic {
     constructor(env = null) {
         super();
-
+        this.startMongoBeforeBootFlag = false;
+        this.mongoDbForceConnectString = null;
+        this.mongoDbOptions = {};
         if (env) {
             this.printEnvBasedConfig(env);
         }
-
         this.stopOnExit();
         this.throwOnUnhandledPromiseRejection();
-
-        this._startMongoBeforeBoot = false;
-        this._mongoDbForceConnectString = null;
-        this._mongoDbOptions = {};
-        this._metrics = new Metrics();
+        this.startMongoBeforeBootFlag = false;
+        this.mongoDbForceConnectString = null;
+        this.mongoDbOptions = {};
+        this.metrics = new PrometheusMetrics_1.PrometheusMetrics();
     }
-
     async start() {
-        await this._tryStartDbBeforeBoot();
+        await this.tryStartDbBeforeBoot();
         await this.boot();
         await this.startNested();
-        this._tryIncludeDbToNested();
-
-        this._metrics.inc('service_start');
+        this.tryIncludeDbToNested();
+        this.metrics.inc('service_start');
     }
-
     async stop() {
         await this.stopNested();
-
-        this._metrics.inc('service_stop');
+        this.metrics.inc('service_stop');
         process.exit(0);
     }
-
-    /**
-     * Will connect and start the work service
-     * with the MongoDB database before running the boot method.
-     * Immediately saves the MongoDB service instance inside the class.
-     * @param {string/null} [forceConnectString] Connection string,
-     * optional.
-     * @param {Object} [options] Connection settings.
-     */
     startMongoBeforeBoot(forceConnectString, options) {
-        this._mongoDb = new MongoDB();
-        this._startMongoBeforeBoot = true;
-        this._mongoDbForceConnectString = forceConnectString;
-        this._mongoDbOptions = options;
+        this.mongoDb = new MongoDB_1.MongoDB();
+        this.startMongoBeforeBootFlag = true;
+        this.mongoDbForceConnectString = forceConnectString;
+        this.mongoDbOptions = options;
     }
-
-    /**
-     * Get an instance of the MongoDB service, if there is one.
-     * The instance will not be started before the start of this service.
-     * @return {MongoDB/null} Instance.
-     */
     getMongoDbInstance() {
-        return this._mongoDb || null;
+        return this.mongoDb || null;
     }
-
-    _tryIncludeDbToNested() {
-        if (this._startMongoBeforeBoot) {
-            this._nestedServices.unshift(this._mongoDb);
+    tryIncludeDbToNested() {
+        if (this.startMongoBeforeBootFlag) {
+            this.nestedServices.unshift(this.mongoDb);
         }
     }
-
-    async _tryStartDbBeforeBoot() {
-        if (this._startMongoBeforeBoot) {
-            Logger.info(`Start MongoDB...`);
-            await this._mongoDb.start(this._mongoDbForceConnectString, this._mongoDbOptions);
-            Logger.info(`The MongoDB done!`);
-
-            this._tryExcludeDbFromNested(MongoDB);
+    async tryStartDbBeforeBoot() {
+        if (this.startMongoBeforeBootFlag) {
+            Logger_1.Logger.info(`Start MongoDB...`);
+            await this.mongoDb.start(this.mongoDbForceConnectString, this.mongoDbOptions);
+            Logger_1.Logger.info(`The MongoDB done!`);
+            this.tryExcludeDbFromNested(MongoDB_1.MongoDB);
         }
     }
-
-    _tryExcludeDbFromNested(Class) {
+    tryExcludeDbFromNested(Class) {
         const name = Class.name;
-
-        this._nestedServices = this._nestedServices.filter(service => {
+        this.nestedServices = this.nestedServices.filter(service => {
             if (service instanceof Class) {
-                Logger.warn(`Exclude ${name} from nested services - start${name}BeforeBoot used`);
+                Logger_1.Logger.warn(`Exclude ${name} from nested services - start${name}BeforeBoot used`);
                 return false;
-            } else {
+            }
+            else {
                 return true;
             }
         });
     }
 }
-
-module.exports = BasicMain;
+exports.BasicMain = BasicMain;
+//# sourceMappingURL=BasicMain.js.map

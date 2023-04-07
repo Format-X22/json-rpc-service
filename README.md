@@ -28,7 +28,7 @@ And not in blockchain projects:
 
 **Usage:**
 
-Just connect the desired class or all classes at once via `index.js `
+Just connect the desired class or all classes at once via `index.ts `
 
 You can also specify environment variables:
 

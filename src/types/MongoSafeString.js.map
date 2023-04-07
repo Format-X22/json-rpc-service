@@ -1,0 +1,1 @@
+{"version":3,"file":"MongoSafeString.js","sourceRoot":"","sources":["MongoSafeString.ts"],"names":[],"mappings":";;;AAAA,qCAAqC;AACrC,8CAA2C;AAM3C,MAAa,eAAgB,SAAQ,QAAQ,CAAC,UAAU;IACpD,IAAI,CAAC,KAAK;QACN,OAAO,IAAI,iBAAO,EAAE,CAAC,QAAQ,CAAC,KAAK,CAAC,CAAC;IACzC,CAAC;CACJ;AAJD,0CAIC;AAGD,QAAQ,CAAC,MAAM,CAAC,KAAK,CAAC,eAAe,GAAG,eAAe,CAAC"}

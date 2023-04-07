@@ -1,15 +1,15 @@
-// For a description of the environment variables, see the Readme.
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.envs = void 0;
 const env = process.env;
-
-module.exports = {
+exports.envs = {
     JRS_MONGO_CONNECT: env.JRS_MONGO_CONNECT || 'mongodb://mongo/admin',
     JRS_METRICS_HOST: env.JRS_METRICS_HOST || '127.0.0.1',
     JRS_METRICS_PORT: Number(env.JRS_METRICS_PORT) || 9777,
     JRS_CONNECTOR_HOST: env.JRS_CONNECTOR_HOST || '0.0.0.0',
     JRS_CONNECTOR_PORT: Number(env.JRS_CONNECTOR_PORT) || 3000,
     JRS_CONNECTOR_SOCKET: env.JRS_CONNECTOR_SOCKET,
-    JRS_EXTERNAL_CALLS_METRICS:
-        Boolean(env.JRS_EXTERNAL_CALLS_METRICS) && env.JRS_EXTERNAL_CALLS_METRICS !== 'false',
+    JRS_EXTERNAL_CALLS_METRICS: Boolean(env.JRS_EXTERNAL_CALLS_METRICS) && env.JRS_EXTERNAL_CALLS_METRICS !== 'false',
     JRS_SYSTEM_METRICS: Boolean(env.JRS_SYSTEM_METRICS) && env.JRS_SYSTEM_METRICS !== 'false',
     JRS_SERVER_STATIC_DIR: env.JRS_SERVER_STATIC_DIR || null,
     JRS_SERVER_CONNECTOR_PATH: env.JRS_SERVER_CONNECTOR_PATH || '/',
@@ -22,3 +22,4 @@ module.exports = {
     JRS_POSTGRES_PORT: env.JRS_POSTGRES_PORT,
     JRS_POSTGRES_DATABASE: env.JRS_POSTGRES_DATABASE,
 };
+//# sourceMappingURL=env.js.map
