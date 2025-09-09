@@ -2,8 +2,8 @@
  * An assistant for asynchronous calls with a limitation of simultaneous calls.
  */
 export class ParallelPool {
-    private handler: Function;
-    private parallelCount: number;
+    private readonly handler: Function;
+    private readonly parallelCount: number;
     private isChecking: boolean;
     private queueVal: Array<any>;
     private currentPromises: Set<any>;

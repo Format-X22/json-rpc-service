@@ -1,6 +1,6 @@
 export declare class ParallelPool {
-    private handler;
-    private parallelCount;
+    private readonly handler;
+    private readonly parallelCount;
     private isChecking;
     private queueVal;
     private currentPromises;

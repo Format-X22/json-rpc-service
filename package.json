@@ -1,6 +1,6 @@
 {
   "name": "json-rpc-service",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "",
   "main": "index.ts",
   "scripts": {
@@ -23,7 +23,7 @@
     "jayson": "^2.1.2",
     "lodash.template": "^4.5.0",
     "moment": "^2.29.1",
-    "mongoose": "^5.11.8",
+    "mongoose": "8.9.5",
     "pg": "^8.5.1",
     "pg-hstore": "^2.3.3",
     "prom-client": "^11.5.3",

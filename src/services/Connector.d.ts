@@ -1,9 +1,9 @@
 import { Basic } from './Basic';
 export declare class Connector extends Basic {
-    private host;
-    private port;
-    private socket;
-    private alias;
+    private readonly host;
+    private readonly port;
+    private readonly socket;
+    private readonly alias;
     private server;
     private clientsMap;
     private defaultResponse;

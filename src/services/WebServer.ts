@@ -13,12 +13,12 @@ import { Logger } from '../utils/Logger';
  * and issue a connector (Connector class) by IP.
  */
 export class WebServer extends Basic {
-    private host: string;
-    private port: number;
-    private socket: any;
-    private connector: Connector;
-    private connectorPath: string;
-    private appVal: Express;
+    private readonly host: string;
+    private readonly port: number;
+    private readonly socket: any;
+    private readonly connector: Connector;
+    private readonly connectorPath: string;
+    private readonly appVal: Express;
 
     /**
      * @param [static Dir] Folder for static files.

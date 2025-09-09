@@ -33,6 +33,6 @@ class Logger {
         }
     }
 }
-Logger.metrics = null;
 exports.Logger = Logger;
+Logger.metrics = null;
 //# sourceMappingURL=Logger.js.map

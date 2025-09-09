@@ -200,10 +200,10 @@ const ajv = new Ajv({ useDefaults: true });
  *  ```
  */
 export class Connector extends Basic {
-    private host: string;
-    private port: number;
-    private socket: string;
-    private alias: string;
+    private readonly host: string;
+    private readonly port: number;
+    private readonly socket: string;
+    private readonly alias: string;
     private server = null;
     private clientsMap: Map<any, any> = new Map();
     private defaultResponse = { status: 'OK' };

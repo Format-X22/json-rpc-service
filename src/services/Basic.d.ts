@@ -1,10 +1,9 @@
-/// <reference types="node" />
 import * as EventEmitter from 'node:events';
 export declare abstract class Basic {
     private exclusiveIterationInProcess;
     private loopId;
     private doneFlag;
-    private emitter;
+    private readonly emitter;
     protected nestedServices: Array<any>;
     allowParallelIterations: boolean;
     throwOnIterationError: boolean;

@@ -49,9 +49,9 @@ import { envs } from '../data/env';
  */
 export abstract class Basic {
     private exclusiveIterationInProcess = false;
-    private loopId: NodeJS.Timer;
+    private loopId: NodeJS.Timeout;
     private doneFlag: boolean;
-    private emitter: EventEmitter;
+    private readonly emitter: EventEmitter;
 
     protected nestedServices: Array<any>;
 
